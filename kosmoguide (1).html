@@ -1,0 +1,2601 @@
+<!DOCTYPE html>
+<html lang="kk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="КосмоГид — ғарыш, астрономия және планетарийлер туралы білім беру платформасы">
+<title>КосмоГид — Ғарышты зерттеу платформасы</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  /* base surfaces */
+  --void:#040509;
+  --void-2:#07080f;
+  --nebula:#0a0d1f;
+  --nebula-2:#101430;
+  --panel:rgba(255,255,255,0.035);
+  --panel-strong:rgba(255,255,255,0.06);
+  --glass:rgba(255,255,255,0.04);
+  --glass-brd:rgba(150,145,255,0.16);
+  --glass-brd-strong:rgba(150,145,255,0.32);
+  /* accent system */
+  --indigo:#1c2250;
+  --violet:#7b5cf0;
+  --violet-2:#5b3fd6;
+  --violet-soft:rgba(123,92,240,0.14);
+  --cyan:#49c9f0;
+  --cyan-soft:rgba(73,201,240,0.14);
+  --gold:#e8c07a;
+  --gold-soft:rgba(232,192,122,0.12);
+  /* text */
+  --ink:#f2f3fb;
+  --ink-dim:#9ba0c2;
+  --ink-dimmer:#666b8c;
+  --danger:#ef6b7c;
+  --ok:#4fd39a;
+  /* geometry */
+  --radius-s:10px;
+  --radius-m:16px;
+  --radius-l:24px;
+  --radius-xl:32px;
+  --ease:cubic-bezier(.22,.9,.32,1);
+  font-size:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+html,body{background:var(--void);color:var(--ink);}
+body{
+  font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  min-height:100vh;
+  overflow-x:hidden;
+  position:relative;
+  font-feature-settings:"ss01" on;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4,.brand,.display{
+  font-family:'Space Grotesk','Inter',sans-serif;
+  letter-spacing:-0.015em;
+  font-weight:600;
+  line-height:1.15;
+}
+.mono{font-family:'JetBrains Mono',monospace;}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;color:inherit;}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--cyan);outline-offset:2px;border-radius:6px;
+}
+ul{list-style:none;}
+input,select,textarea{font-family:inherit;}
+::selection{background:var(--violet);color:#fff;}
+@media (prefers-reduced-motion: reduce){ *{animation-duration:0.01ms !important; transition-duration:0.01ms !important;} }
+
+/* starfield */
+#starfield{position:fixed;inset:0;z-index:0;pointer-events:none;}
+
+/* topbar */
+.topbar{
+  position:sticky;top:0;z-index:50;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:13px 30px;
+  background:rgba(5,6,12,0.62);
+  backdrop-filter:blur(20px) saturate(140%);
+  -webkit-backdrop-filter:blur(20px) saturate(140%);
+  border-bottom:1px solid rgba(150,145,255,0.10);
+  transition:background .3s var(--ease);
+}
+.brand{display:flex;align-items:center;gap:11px;font-weight:600;font-size:1.2rem;}
+.brand-mark{
+  width:32px;height:32px;border-radius:9px;position:relative;flex-shrink:0;
+  background:linear-gradient(155deg,var(--nebula-2),var(--void-2));
+  border:1px solid var(--glass-brd-strong);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:inset 0 0 10px rgba(123,92,240,0.25), 0 0 16px rgba(123,92,240,0.22);
+}
+.brand-mark::before{
+  content:'';width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle at 32% 30%, var(--cyan), var(--violet) 70%);
+  box-shadow:0 0 10px rgba(73,201,240,0.8);
+}
+nav.mainnav{display:flex;gap:2px;align-items:center;flex-wrap:wrap;}
+nav.mainnav a{
+  padding:8px 13px;border-radius:999px;font-size:0.84rem;color:var(--ink-dim);font-weight:500;
+  transition:all .2s var(--ease);white-space:nowrap;position:relative;
+}
+nav.mainnav a:hover{background:var(--panel);color:var(--ink);}
+nav.mainnav a.active{background:var(--panel-strong);color:var(--ink);box-shadow:inset 0 0 0 1px var(--glass-brd-strong);}
+.topbar-right{display:flex;align-items:center;gap:8px;}
+.icon-btn{
+  width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;
+  background:var(--panel);border:1px solid var(--glass-brd);font-size:0.95rem;position:relative;transition:.2s var(--ease);color:var(--ink-dim);
+}
+.icon-btn:hover{background:var(--violet-soft);border-color:var(--glass-brd-strong);color:var(--ink);transform:translateY(-1px);}
+.badge-dot{position:absolute;top:-3px;right:-3px;min-width:15px;height:15px;padding:0 3px;border-radius:999px;background:var(--gold);border:2px solid var(--void);font-size:0.6rem;font-weight:700;color:#1a1200;display:flex;align-items:center;justify-content:center;}
+.lang-switch{display:flex;background:var(--panel);border:1px solid var(--glass-brd);border-radius:999px;overflow:hidden;}
+.lang-switch button{padding:7px 12px;font-size:0.74rem;font-weight:700;color:var(--ink-dimmer);letter-spacing:.02em;transition:.2s;}
+.lang-switch button.active{background:var(--violet);color:#fff;}
+.pill-btn{
+  padding:10px 19px;border-radius:999px;font-size:0.84rem;font-weight:600;
+  background:linear-gradient(135deg,var(--violet),var(--violet-2));color:#fff;
+  box-shadow:0 6px 20px -6px rgba(123,92,240,0.55);transition:.22s var(--ease);
+}
+.pill-btn:hover{transform:translateY(-1px);box-shadow:0 8px 26px -4px rgba(123,92,240,0.65);}
+.pill-btn:active{transform:translateY(0);}
+.pill-btn.ghost{background:var(--panel);border:1px solid var(--glass-brd);box-shadow:none;color:var(--ink);}
+.pill-btn.ghost:hover{border-color:var(--glass-brd-strong);}
+.hamburger{display:none;width:38px;height:38px;border-radius:10px;background:var(--panel);border:1px solid var(--glass-brd);align-items:center;justify-content:center;}
+.hamburger span{display:block;width:16px;height:2px;background:var(--ink);position:relative;}
+.hamburger span::before,.hamburger span::after{content:'';position:absolute;left:0;width:16px;height:2px;background:var(--ink);}
+.hamburger span::before{top:-5px;}.hamburger span::after{top:5px;}
+
+/* search overlay */
+.search-modal{max-width:560px;width:100%;padding:0;overflow:visible;background:var(--nebula);}
+.search-input-row{display:flex;align-items:center;gap:12px;padding:18px 20px;border-bottom:1px solid var(--glass-brd);}
+.search-input-row input{flex:1;background:transparent;border:none;color:var(--ink);font-size:1.05rem;}
+.search-input-row input:focus{outline:none;}
+.search-results{max-height:60vh;overflow:auto;padding:10px;}
+.search-result-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:var(--radius-s);transition:.15s;cursor:pointer;}
+.search-result-item:hover,.search-result-item.kbd-active{background:var(--violet-soft);}
+.search-result-item .sr-em{width:34px;height:34px;border-radius:9px;background:var(--panel);display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0;}
+.search-result-item .sr-meta{font-size:0.72rem;color:var(--ink-dimmer);}
+.search-empty{padding:30px 20px;text-align:center;color:var(--ink-dimmer);font-size:0.85rem;}
+
+/* notifications */
+.notif-panel{position:absolute;right:0;top:48px;width:340px;max-height:420px;overflow:auto;background:var(--nebula);border:1px solid var(--glass-brd);border-radius:var(--radius-m);box-shadow:0 24px 60px -20px rgba(0,0,0,0.6);z-index:120;}
+.notif-item{padding:13px 16px;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.83rem;display:flex;gap:10px;align-items:flex-start;}
+.notif-item.unread{background:rgba(123,92,240,0.06);}
+.notif-item .n-em{font-size:1.05rem;}
+.notif-item .n-time{color:var(--ink-dimmer);font-size:0.72rem;margin-top:3px;}
+.notif-empty{padding:34px 20px;text-align:center;color:var(--ink-dimmer);font-size:0.83rem;}
+
+main{position:relative;z-index:1;max-width:1180px;margin:0 auto;padding:0 28px 90px;}
+.crumbs{display:flex;gap:6px;align-items:center;color:var(--ink-dimmer);font-size:0.82rem;margin:22px 0 6px;}
+.crumbs a:hover{color:var(--cyan);}
+
+/* hero */
+.hero{
+  position:relative;padding:96px 10px 64px;text-align:center;overflow:hidden;
+  margin:0 -28px;
+}
+.hero-layer{position:absolute;inset:0;transition:transform .25s var(--ease);will-change:transform;pointer-events:none;}
+.orbits{position:absolute;left:50%;top:46%;transform:translate(-50%,-50%);width:900px;height:900px;pointer-events:none;opacity:.5;}
+.orbits div{position:absolute;border:1px solid rgba(150,145,255,0.14);border-radius:50%;left:50%;top:50%;}
+.orbit1{width:340px;height:340px;transform:translate(-50%,-50%) rotate(8deg);}
+.orbit2{width:540px;height:540px;transform:translate(-50%,-50%) rotate(-6deg);}
+.orbit3{width:760px;height:760px;transform:translate(-50%,-50%) rotate(4deg);}
+.hero-badge{
+  display:inline-flex;align-items:center;gap:8px;padding:7px 16px 7px 8px;border-radius:999px;
+  background:var(--panel);border:1px solid var(--glass-brd-strong);font-size:0.72rem;font-weight:600;
+  letter-spacing:.06em;color:var(--ink-dim);margin-bottom:22px;position:relative;z-index:2;
+}
+.hero-badge .dot{width:7px;height:7px;border-radius:50%;background:var(--ok);box-shadow:0 0 8px var(--ok);}
+.hero-eyebrow{ font-size:0.9rem;color:var(--cyan);font-weight:600; }
+.hero h1{
+  font-size:clamp(2.6rem,6.4vw,4.8rem);font-weight:700;margin:6px 0 18px;letter-spacing:-0.02em;
+  background:linear-gradient(135deg,#fff 15%,var(--cyan) 60%,var(--violet) 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+  position:relative;z-index:2;
+}
+.hero p.tagline{color:var(--ink-dim);font-size:1.1rem;max-width:600px;margin:0 auto 12px;position:relative;z-index:2;}
+.hero p.subtag{color:var(--ink-dimmer);font-size:0.92rem;max-width:520px;margin:0 auto 34px;position:relative;z-index:2;line-height:1.6;}
+.hero-actions{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;position:relative;z-index:2;margin-bottom:46px;}
+
+/* hero interactive planet chips */
+.hero-objects{position:relative;z-index:2;max-width:820px;margin:0 auto;display:flex;justify-content:center;gap:26px;flex-wrap:wrap;}
+.hero-obj{
+  position:relative;width:64px;height:64px;border-radius:50%;cursor:pointer;transition:transform .25s var(--ease),box-shadow .25s var(--ease);
+  display:flex;align-items:center;justify-content:center;font-size:1.6rem;
+  border:1px solid var(--glass-brd);background:var(--panel);
+}
+.hero-obj:hover{transform:translateY(-6px) scale(1.08);box-shadow:0 14px 34px -10px var(--obj-glow,rgba(123,92,240,0.6));border-color:var(--glass-brd-strong);}
+.hero-obj-card{
+  position:absolute;bottom:82px;left:50%;transform:translateX(-50%) translateY(6px);
+  width:190px;padding:14px 16px;border-radius:var(--radius-m);background:var(--nebula);
+  border:1px solid var(--glass-brd-strong);box-shadow:0 20px 50px -14px rgba(0,0,0,0.6);
+  opacity:0;pointer-events:none;transition:opacity .2s var(--ease),transform .2s var(--ease);text-align:left;z-index:5;
+}
+.hero-obj:hover .hero-obj-card{opacity:1;transform:translateX(-50%) translateY(0);}
+.hero-obj-card b{display:block;font-size:0.88rem;margin-bottom:6px;}
+.hero-obj-card .hoc-row{display:flex;justify-content:space-between;font-size:0.72rem;color:var(--ink-dimmer);margin-top:2px;}
+
+/* section grid */
+.section{margin-top:64px;}
+.section-head{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:22px;gap:12px;flex-wrap:wrap;}
+.section-head h2{font-size:1.6rem;font-weight:700;}
+.section-head p{color:var(--ink-dimmer);font-size:0.9rem;margin-top:4px;}
+.see-all{font-size:0.85rem;color:var(--cyan);white-space:nowrap;}
+
+.bento{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.bento a.tile{
+  grid-column:span 1;padding:26px 18px;border-radius:var(--radius-m);
+  background:var(--glass);border:1px solid var(--glass-brd);
+  display:flex;flex-direction:column;gap:10px;transition:.2s;
+}
+.bento a.tile:hover{transform:translateY(-3px);border-color:var(--violet);background:rgba(139,107,255,0.09);}
+.tile .em{font-size:1.7rem;}
+.tile b{font-size:1rem;}
+.tile span{color:var(--ink-dimmer);font-size:0.8rem;}
+
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.card{
+  background:var(--panel);border:1px solid var(--glass-brd);border-radius:var(--radius-m);
+  overflow:hidden;transition:transform .25s var(--ease),border-color .25s var(--ease),box-shadow .25s var(--ease);display:flex;flex-direction:column;
+}
+.card:hover{transform:translateY(-4px);border-color:var(--glass-brd-strong);box-shadow:0 20px 44px -18px rgba(20,10,60,0.55);}
+.card-media{
+  height:140px;display:flex;align-items:center;justify-content:center;font-size:2.6rem;position:relative;overflow:hidden;
+}
+.card-media::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 20%,rgba(255,255,255,0.08),transparent 60%);}
+.card:hover .card-media span,.card:hover .card-media{transform:scale(1.04);}
+.card-body{padding:17px 19px 19px;display:flex;flex-direction:column;gap:8px;flex:1;}
+.card-body h3{font-size:1.02rem;font-weight:600;}
+.card-body p{color:var(--ink-dimmer);font-size:0.83rem;line-height:1.55;}
+.meta-row{display:flex;gap:8px;flex-wrap:wrap;font-size:0.75rem;color:var(--ink-dimmer);}
+.tag{padding:3px 10px;border-radius:999px;background:var(--cyan-soft);color:var(--cyan);font-size:0.7rem;font-weight:600;}
+.tag.violet{background:var(--violet-soft);color:#c9bcff;}
+.tag.gold{background:var(--gold-soft);color:var(--gold);}
+.tag.ok{background:rgba(79,211,154,0.14);color:var(--ok);}
+.card-cta{margin-top:auto;padding:12px 19px;border-top:1px solid rgba(255,255,255,0.05);font-size:0.81rem;color:var(--cyan);font-weight:600;display:flex;justify-content:space-between;align-items:center;}
+
+.today-block{
+  border-radius:var(--radius-l);padding:0;background:var(--panel);
+  border:1px solid var(--glass-brd);overflow:hidden;
+}
+.today-head{display:flex;justify-content:space-between;align-items:center;padding:22px 26px;border-bottom:1px solid rgba(255,255,255,0.06);background:linear-gradient(135deg,rgba(123,92,240,0.10),rgba(73,201,240,0.04));flex-wrap:wrap;gap:10px;}
+.today-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:rgba(255,255,255,0.05);}
+.today-cell{background:var(--nebula);padding:20px 22px;}
+.today-cell .tc-label{font-size:0.7rem;color:var(--ink-dimmer);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px;}
+.today-cell .tc-value{font-size:1.15rem;font-weight:600;}
+.today-cell .tc-sub{font-size:0.76rem;color:var(--ink-dimmer);margin-top:4px;}
+
+/* filters */
+.filter-bar{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:26px;align-items:center;}
+.filter-bar input[type=text]{
+  flex:1;min-width:220px;padding:11px 16px;border-radius:999px;background:var(--glass);
+  border:1px solid var(--glass-brd);color:var(--ink);
+}
+.chip{
+  padding:8px 15px;border-radius:999px;background:var(--glass);border:1px solid var(--glass-brd);font-size:0.82rem;color:var(--ink-dim);
+}
+.chip.active{background:var(--violet);color:#fff;border-color:var(--violet);}
+
+/* buttons generic */
+.btn{padding:10px 18px;border-radius:999px;font-size:0.85rem;font-weight:600;background:var(--glass);border:1px solid var(--glass-brd);color:var(--ink);transition:.18s;}
+.btn:hover{border-color:var(--violet);}
+.btn.primary{background:linear-gradient(135deg,var(--violet),var(--violet-2));color:#fff;border:none;}
+.btn.danger{color:var(--danger);border-color:rgba(255,107,129,0.4);}
+.btn.small{padding:6px 12px;font-size:0.75rem;}
+.btn.full{width:100%;}
+
+/* detail page */
+.detail-hero{display:flex;gap:30px;align-items:flex-start;flex-wrap:wrap;margin-bottom:30px;}
+.detail-icon{
+  width:150px;height:150px;border-radius:var(--radius-l);display:flex;align-items:center;justify-content:center;font-size:4rem;
+  background:var(--glass);border:1px solid var(--glass-brd);flex-shrink:0;
+}
+.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin:20px 0;}
+.stat-box{background:var(--glass);border:1px solid var(--glass-brd);border-radius:var(--radius-s);padding:14px;}
+.stat-box b{display:block;font-size:1.15rem;color:var(--cyan);}
+.stat-box span{font-size:0.75rem;color:var(--ink-dimmer);}
+.prose{color:var(--ink-dim);line-height:1.75;font-size:0.95rem;max-width:760px;}
+.prose + .prose{margin-top:10px;}
+
+/* timeline */
+.timeline{position:relative;padding-left:34px;}
+.timeline::before{content:'';position:absolute;left:9px;top:6px;bottom:6px;width:2px;background:linear-gradient(var(--violet),var(--cyan));}
+.tl-item{position:relative;margin-bottom:26px;background:var(--glass);border:1px solid var(--glass-brd);border-radius:var(--radius-m);padding:18px 20px;}
+.tl-item::before{content:'';position:absolute;left:-29px;top:22px;width:12px;height:12px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 4px rgba(79,214,255,0.18);}
+.tl-year{color:var(--cyan);font-weight:700;font-size:1.1rem;}
+
+/* forum */
+.forum-cats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:34px;}
+.fc{padding:20px;background:var(--glass);border:1px solid var(--glass-brd);border-radius:var(--radius-m);transition:.18s;}
+.fc:hover{border-color:var(--violet);transform:translateY(-2px);}
+.topic-row{display:flex;justify-content:space-between;align-items:center;padding:16px 18px;background:var(--glass);border:1px solid var(--glass-brd);border-radius:var(--radius-s);margin-bottom:10px;gap:14px;}
+.topic-row:hover{border-color:var(--violet);}
+.topic-row .ti{display:flex;gap:12px;align-items:center;}
+.avatar{width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--cyan));display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.9rem;color:#fff;flex-shrink:0;}
+.post{background:var(--glass);border:1px solid var(--glass-brd);border-radius:var(--radius-m);padding:16px 18px;margin-bottom:12px;display:flex;gap:14px;}
+.post-body{flex:1;}
+.post-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+.post-actions{display:flex;gap:10px;font-size:0.75rem;color:var(--ink-dimmer);margin-top:8px;}
+.post-actions button:hover{color:var(--cyan);}
+textarea.field,input.field,select.field{
+  width:100%;padding:11px 14px;border-radius:var(--radius-s);background:rgba(255,255,255,0.04);
+  border:1px solid var(--glass-brd);color:var(--ink);resize:vertical;
+}
+.field-label{font-size:0.78rem;color:var(--ink-dimmer);margin-bottom:6px;display:block;font-weight:600;}
+.form-row{margin-bottom:16px;}
+
+/* zodiac */
+.zodiac-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px;}
+.zbtn{padding:16px 8px;text-align:center;background:var(--glass);border:1px solid var(--glass-brd);border-radius:var(--radius-m);}
+.zbtn:hover,.zbtn.active{border-color:var(--gold);background:rgba(255,205,122,0.1);}
+.zbtn .em{font-size:1.6rem;display:block;margin-bottom:6px;}
+.horo-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:24px;}
+.horo-card{background:var(--glass);border:1px solid var(--glass-brd);border-radius:var(--radius-m);padding:18px;}
+.horo-card b{color:var(--gold);font-size:0.85rem;}
+
+/* quiz */
+.quiz-box{background:var(--glass);border:1px solid var(--glass-brd);border-radius:var(--radius-l);padding:34px;max-width:640px;margin:0 auto;}
+.quiz-opt{display:block;width:100%;text-align:left;padding:14px 16px;border-radius:var(--radius-s);background:rgba(255,255,255,0.03);border:1px solid var(--glass-brd);margin-bottom:10px;transition:.15s;}
+.quiz-opt:hover{border-color:var(--violet);}
+.quiz-opt.correct{border-color:var(--ok);background:rgba(91,227,164,0.14);}
+.quiz-opt.wrong{border-color:var(--danger);background:rgba(255,107,129,0.14);}
+.progress-bar{height:6px;border-radius:999px;background:rgba(255,255,255,0.08);overflow:hidden;margin-bottom:22px;}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--violet),var(--cyan));transition:width .3s;}
+
+/* modal */
+.modal-bg{position:fixed;inset:0;background:rgba(2,3,10,0.72);backdrop-filter:blur(4px);z-index:200;display:flex;align-items:center;justify-content:center;padding:20px;}
+.modal{background:var(--nebula);border:1px solid var(--glass-brd);border-radius:var(--radius-l);padding:32px;max-width:440px;width:100%;max-height:88vh;overflow:auto;position:relative;}
+.modal.wide{max-width:640px;}
+.modal-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;background:var(--glass);display:flex;align-items:center;justify-content:center;}
+
+/* toast */
+#toast-wrap{position:fixed;bottom:24px;right:24px;z-index:300;display:flex;flex-direction:column;gap:10px;}
+.toast{background:var(--nebula-2);border:1px solid var(--glass-brd);border-left:3px solid var(--cyan);padding:13px 18px;border-radius:var(--radius-s);font-size:0.85rem;box-shadow:0 10px 30px rgba(0,0,0,0.4);animation:slidein .25s ease;}
+@keyframes slidein{from{transform:translateX(30px);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+/* comments */
+.comment{display:flex;gap:12px;padding:14px 0;border-bottom:1px solid rgba(255,255,255,0.06);}
+.comment-body{flex:1;}
+.reactions{display:flex;gap:8px;margin-top:6px;}
+.reactions button{font-size:0.78rem;padding:3px 9px;border-radius:999px;background:var(--glass);border:1px solid var(--glass-brd);}
+
+/* profile */
+.profile-head{display:flex;gap:22px;align-items:center;margin-bottom:30px;flex-wrap:wrap;}
+.profile-avatar{width:84px;height:84px;border-radius:50%;background:linear-gradient(135deg,var(--violet),var(--cyan));display:flex;align-items:center;justify-content:center;font-size:2rem;font-weight:700;color:#fff;}
+.stat-strip{display:flex;gap:26px;flex-wrap:wrap;}
+.stat-strip div b{display:block;font-size:1.3rem;color:var(--cyan);}
+.stat-strip div span{font-size:0.75rem;color:var(--ink-dimmer);}
+
+/* empty / error states */
+.empty-state{text-align:center;padding:60px 20px;color:var(--ink-dimmer);}
+.empty-state .em{font-size:2.4rem;margin-bottom:10px;}
+
+/* admin */
+.admin-wrap{display:flex;min-height:calc(100vh - 66px);}
+.admin-side{width:230px;flex-shrink:0;background:rgba(8,9,24,0.9);border-right:1px solid rgba(140,130,255,0.14);padding:22px 14px;position:sticky;top:66px;height:calc(100vh - 66px);overflow:auto;}
+.admin-side a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-s);color:var(--ink-dim);font-size:0.86rem;margin-bottom:4px;}
+.admin-side a:hover,.admin-side a.active{background:rgba(139,107,255,0.16);color:#fff;}
+.admin-main{flex:1;padding:30px 34px;max-width:1100px;}
+.admin-tag{display:inline-block;padding:3px 10px;border-radius:6px;background:rgba(255,205,122,0.15);color:var(--gold);font-size:0.7rem;font-weight:700;letter-spacing:.03em;}
+.stat-card{background:var(--glass);border:1px solid var(--glass-brd);border-radius:var(--radius-m);padding:20px;}
+.stat-card b{font-size:1.7rem;display:block;}
+.stat-card span{color:var(--ink-dimmer);font-size:0.78rem;}
+.bar-row{display:flex;align-items:center;gap:10px;margin-bottom:10px;font-size:0.8rem;}
+.bar-row .lbl{width:120px;color:var(--ink-dimmer);flex-shrink:0;}
+.bar-track{flex:1;height:9px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;}
+.bar-fill{height:100%;background:linear-gradient(90deg,var(--violet),var(--cyan));}
+table.admin-table{width:100%;border-collapse:collapse;font-size:0.85rem;}
+table.admin-table th{text-align:left;padding:10px 12px;color:var(--ink-dimmer);font-weight:600;border-bottom:1px solid var(--glass-brd);font-size:0.75rem;text-transform:uppercase;letter-spacing:.03em;}
+table.admin-table td{padding:12px;border-bottom:1px solid rgba(255,255,255,0.05);}
+table.admin-table tr:hover td{background:rgba(255,255,255,0.02);}
+.status-dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:6px;}
+
+/* skeleton loading */
+@keyframes shimmer{0%{background-position:-300px 0;}100%{background-position:300px 0;}}
+.skel{background:linear-gradient(90deg,rgba(255,255,255,0.04) 25%,rgba(255,255,255,0.09) 37%,rgba(255,255,255,0.04) 63%);background-size:600px 100%;animation:shimmer 1.6s infinite linear;border-radius:var(--radius-s);}
+.skel-card{height:230px;border-radius:var(--radius-m);border:1px solid var(--glass-brd);overflow:hidden;}
+.skel-line{height:12px;margin:8px 0;}
+.boot-screen{position:fixed;inset:0;z-index:500;background:var(--void);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;}
+.boot-ring{width:46px;height:46px;border-radius:50%;border:2px solid rgba(150,145,255,0.18);border-top-color:var(--cyan);animation:spin 0.9s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+
+/* achievements & XP */
+.xp-bar-wrap{background:var(--panel);border:1px solid var(--glass-brd);border-radius:999px;height:10px;overflow:hidden;}
+.xp-bar-fill{height:100%;background:linear-gradient(90deg,var(--violet),var(--cyan));transition:width .4s var(--ease);}
+.ach-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.ach-card{padding:18px;border-radius:var(--radius-m);background:var(--panel);border:1px solid var(--glass-brd);text-align:center;transition:.2s;}
+.ach-card.locked{opacity:.4;filter:grayscale(0.6);}
+.ach-card .ach-em{font-size:1.8rem;margin-bottom:8px;}
+.ach-card b{display:block;font-size:0.86rem;margin-bottom:4px;}
+.ach-card span{font-size:0.72rem;color:var(--ink-dimmer);}
+.level-chip{display:inline-flex;align-items:center;gap:6px;padding:5px 12px;border-radius:999px;background:var(--gold-soft);color:var(--gold);font-size:0.74rem;font-weight:700;}
+
+/* password strength */
+.pw-strength{height:5px;border-radius:999px;background:var(--panel);overflow:hidden;margin-top:8px;}
+.pw-strength-fill{height:100%;transition:width .25s var(--ease),background .25s var(--ease);}
+.pw-hint{font-size:0.72rem;color:var(--ink-dimmer);margin-top:5px;}
+.field-error{border-color:var(--danger) !important;}
+.error-text{color:var(--danger);font-size:0.76rem;margin-top:5px;}
+
+/* footer */
+footer{border-top:1px solid rgba(140,130,255,0.14);margin-top:90px;padding:44px 28px 30px;position:relative;z-index:1;}
+.footer-grid{max-width:1180px;margin:0 auto;display:flex;justify-content:space-between;flex-wrap:wrap;gap:30px;}
+.footer-grid ul li{margin-bottom:8px;font-size:0.85rem;color:var(--ink-dim);}
+.footer-bottom{max-width:1180px;margin:30px auto 0;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);display:flex;justify-content:space-between;color:var(--ink-dimmer);font-size:0.78rem;flex-wrap:wrap;gap:10px;}
+
+/* responsive */
+@media(max-width:980px){
+  .bento{grid-template-columns:repeat(2,1fr);}
+  .grid-3{grid-template-columns:repeat(2,1fr);}
+  .grid-4{grid-template-columns:repeat(2,1fr);}
+  .forum-cats{grid-template-columns:repeat(2,1fr);}
+  .zodiac-grid{grid-template-columns:repeat(4,1fr);}
+  .admin-side{position:fixed;left:-240px;top:66px;z-index:60;transition:.2s;background:var(--void);}
+  .admin-side.open{left:0;}
+  .admin-main{padding:22px 16px;}
+  .today-grid{grid-template-columns:repeat(2,1fr);}
+  .ach-grid{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:720px){
+  nav.mainnav{display:none;position:fixed;top:66px;left:0;right:0;background:var(--void);flex-direction:column;padding:14px;border-bottom:1px solid var(--glass-brd);align-items:stretch;}
+  nav.mainnav.open{display:flex;}
+  nav.mainnav a{padding:12px;}
+  .hamburger{display:flex;}
+  .bento{grid-template-columns:1fr 1fr;}
+  .grid-3,.grid-4{grid-template-columns:1fr;}
+  .zodiac-grid{grid-template-columns:repeat(3,1fr);}
+  .horo-grid{grid-template-columns:1fr;}
+  main{padding:0 16px 70px;}
+  .hero{margin:0 -16px;padding:64px 8px 50px;}
+  .detail-hero{flex-direction:column;}
+  .admin-wrap{flex-direction:column;}
+  .admin-side{width:100%;position:static;height:auto;display:none;}
+  .topbar{padding:12px 16px;}
+  .today-grid{grid-template-columns:1fr 1fr;}
+  .ach-grid{grid-template-columns:1fr;}
+  .hero-objects{gap:14px;}
+  .hero-obj{width:52px;height:52px;font-size:1.3rem;}
+  .hero-obj-card{width:160px;}
+  .notif-panel{width:280px;right:-60px;}
+  .search-modal{max-width:100%;}
+}
+</style>
+</head>
+<body>
+<canvas id="starfield"></canvas>
+<div id="app"></div>
+<div id="toast-wrap"></div>
+
+<script>
+/* =========================================================
+   КОСМОГИД — client-side demo SPA
+   Notice: this is a self-contained frontend prototype for a
+   diploma defence. "Backend" behaviour (accounts, forum,
+   moderation, admin CRUD) is simulated with the artifact
+   persistent-storage API so it behaves like a real, working
+   product across reloads — it is not a production auth system.
+   ========================================================= */
+
+/* ---------- i18n ---------- */
+const I18N = {
+kz:{
+  nav_home:"Басты бет",nav_planet:"Планетарийлер",nav_cosmos:"Ғалам",nav_missions:"Миссиялар",
+  nav_news:"Жаңалықтар",nav_articles:"Мақалалар",nav_quiz:"Квиз",nav_horoscope:"Гороскоп",
+  nav_numerology:"Нумерология",nav_forum:"Форум",
+  fav:"Таңдаулылар",profile:"Профиль",login:"Кіру",register:"Тіркелу",logout:"Шығу",
+  hero_eyebrow:"КОСМОГИД — ғарыш әлеміне саяхат",
+  hero_title:"КОСМОГИД",hero_tag:"Зертте Ғаламды. Өзіңе жақыннан баста.",
+  cta_planet:"Планетарийлерді табу",cta_cosmos:"Ғаламды зерттеу",
+  sections_title:"Не таба аласыз",
+  today_title:"Бүгін ғарышта",
+  today_news:"Бүгінгі ғарыш жаңалықтары",
+  see_all:"Барлығын көру",
+  planetariums:"Планетарийлер",planetariums_sub:"Қазақстан мен әлемдегі планетарийлер каталогы",
+  search_ph:"Атауы немесе қала бойынша іздеу...",
+  city:"Қала",rating:"Рейтинг",kids:"Балаларға",adults:"Ересектерге",tours3d:"3D-бағдарлама",
+  more:"Толығырақ",
+  cosmos:"Ғалам",cosmos_sub:"Күн жүйесі, жұлдыздар, галактикалар және қара құрдымдар",
+  solar:"Күн жүйесі",
+  distance:"Күннен қашықтығы",diameter:"Диаметрі",temp:"Температура",moons:"Серіктер саны",
+  daylen:"Тәулік ұзақтығы",yearlen:"Жыл ұзақтығы",facts:"Қызықты фактілер",
+  constellations:"Шоқжұлдыздар",constellations_sub:"Түнгі аспанды интерактивті зерттеу",
+  main_stars:"Негізгі жұлдыздар",mythology:"Мифология",best_time:"Бақылауға қолайлы уақыт",direction:"Аспандағы бағыты",
+  whats_up:"Қазір аспанда не көрінеді?",
+  missions:"Ғарыш миссиялары",missions_sub:"Ғарышты зерттеу тарихы",
+  agency:"Агенттік",participants:"Қатысушылар",result:"Нәтиже",
+  news:"Ғарыш жаңалықтары",news_sub:"Ең соңғы астрономиялық жаңалықтар",
+  newplanets:"Жаңа ашылған ғаламшарлар",discovered:"Ашылған күні",discoverer:"Кім ашты",telescope:"Телескоп",
+  articles:"Астрономия туралы мақалалар",articles_sub:"Ғалам туралы терең білім",
+  author:"Автор",views:"Қаралым",add_fav:"Таңдаулыға қосу",in_fav:"Таңдаулыда",
+  horoscope:"Жұлдыз жорамалы",horoscope_sub:"Зодиак белгіңізді таңдаңыз",
+  today_horo:"Бүгінгі жұлдыз жорамалы",
+  h_general:"Жалпы болжам",h_love:"Махаббат",h_work:"Оқу/жұмыс",h_money:"Қаржы",h_mood:"Көңіл-күй",h_energy:"Энергия",h_tip:"Күн кеңесі",
+  horo_disclaimer:"Бұл бөлім ойын-сауық сипатында, ғылыми болжам емес.",
+  numerology:"Нумерология",numerology_sub:"Туған күніңіз бойынша өмір жолы санын есептеу",
+  birthdate:"Туған күні",calc:"Есептеу",lifepath:"Өмір жолы саны",
+  lucky_days:"Сәтті күндерім",today_lbl:"Бүгін",in3days:"3 күннен кейін",nextweek:"Келесі апта",
+  quiz:"Астрономиялық тест",quiz_sub:"Білімдеріңізді тексеріңіз",start_quiz:"Тестті бастау",
+  q_of:"сұрақ",correct:"Дұрыс!",wrong:"Қате!",quiz_result:"Нәтиже",quiz_level:"Деңгей",
+  lvl0:"🌱 Жаңадан бастаушы",lvl1:"🔭 Әуесқой",lvl2:"🚀 Астроном",lvl3:"🌌 Сарапшы",
+  restart:"Қайта бастау",
+  forum:"Ғарыш форумы",forum_sub:"Ғарыш әуесқойларының қауымдастығы",
+  new_topic:"Жаңа тақырып",topic_title:"Тақырып атауы",category:"Санат",create:"Жасау",
+  write_msg:"Хабарлама жазыңыз...",send:"Жіберу",
+  topics:"тақырып",posts:"хабарлама",author_lbl:"Автор",created:"Жасалған күні",
+  edit:"Өңдеу",delete:"Жою",report:"Шағымдану",
+  auth_login_title:"Аккаунтқа кіру",auth_reg_title:"Тіркелу",
+  username:"Пайдаланушы аты",email:"Email",password:"Құпия сөз",password2:"Құпия сөзді қайталау",
+  no_account:"Аккаунтыңыз жоқ па?",have_account:"Аккаунтыңыз бар ма?",
+  submit_login:"Кіру",submit_reg:"Тіркелу",
+  my_profile:"Менің профилім",member_since:"Тіркелген күні",
+  msgs_count:"Форум хабарламалары",topics_count:"Құрылған тақырыптар",quiz_best:"Квиз нәтижесі",
+  fav_articles:"Таңдаулы мақалалар",fav_planet:"Таңдаулы планетарийлер",
+  settings:"Баптаулар",change_name:"Атын өзгерту",change_pass:"Құпия сөзді өзгерту",save:"Сақтау",
+  favorites:"Таңдаулыларым",favorites_sub:"Сақталған материалдарыңыз",empty_fav:"Әзірге таңдаулылар жоқ",
+  global_search:"Іздеу...",results_for:"Іздеу нәтижесі:",no_results:"Ештеңе табылмады",
+  comments:"Пікірлер",add_comment:"Пікір қалдыру...",
+  footer_about:"Жоба туралы",footer_contacts:"Байланыс",
+  admin_panel:"ADMIN PANEL",dashboard:"Dashboard",users:"Пайдаланушылар",
+  moderation:"Форумды модерациялау",comments_mod:"Пікірлерді модерациялау",
+  total_users:"Барлық пайдаланушылар",active_users:"Белсенді пайдаланушылар",total_posts:"Форум хабарламалары",
+  total_topics:"Тақырыптар саны",total_comments:"Пікірлер саны",total_planet:"Планетарийлер саны",
+  total_news:"Жаңалықтар саны",total_articles:"Мақалалар саны",total_fav:"Таңдаулылар саны",
+  add_new:"Қосу",actions:"Әрекеттер",status:"Мәртебесі",published:"Жарияланды",draft:"Черновик",
+  role:"Рөл",block:"Бұғаттау",unblock:"Ашу",back:"Артқа",cancel:"Бас тарту",
+  fill_all:"Барлық өрістерді толтырыңыз",pass_mismatch:"Құпия сөздер сәйкес келмейді",
+  user_exists:"Мұндай пайдаланушы бар",wrong_creds:"Логин немесе құпия сөз қате",
+  welcome_back:"Қош келдіңіз",registered_ok:"Тіркелу сәтті өтті",loggedout:"Сіз жүйеден шықтыңыз",
+  saved_ok:"Сақталды",added_fav:"Таңдаулыға қосылды",removed_fav:"Таңдаулыдан алынды",
+  topic_created:"Тақырып жасалды",post_sent:"Хабарлама жіберілді",need_login:"Алдымен жүйеге кіріңіз",
+  deleted:"Жойылды",blocked:"Бұғатталды",unblocked:"Бұғаттан шығарылды",
+  demo_hint:"Демо: admin / admin123",
+  home:"Басты бет",
+  hero_badge:"ҒАРЫШТЫ ЗЕРТТЕУ ПЛАТФОРМАСЫ",
+  hero_desc:"Планетарийлерді, ғарыш жаңалықтарын, планеталарды, шоқжұлдыздарды және ғарышты зерттеу тарихын бір жерден ашыңыз.",
+  today_dashboard:"ҒАЛАМ БҮГІН",
+  moon_phase:"Айдың фазасы",
+  visible_planets:"Көрінетін планеталар",
+  fact_of_day:"Күн факты",
+  search_placeholder:"Марс, планетарий, форум...",
+  search_hint:"Іздеу үшін теріңіз, нәтижеге өту үшін Enter басыңыз",
+  notifications:"Хабарламалар",
+  no_notifications:"Жаңа хабарлама жоқ",
+  mark_all_read:"Барлығын оқылды деп белгілеу",
+  reply_topic:"тақырыбыңызға жауап берілді",
+  reaction_comment:"пікіріңіз реакция алды",
+  new_achievement:"Жаңа жетістік алдыңыз",
+  sort_by:"Сұрыптау",
+  sort_rating:"Рейтинг бойынша",
+  sort_name:"Атауы бойынша",
+  sort_city:"Қала бойынша",
+  open_now:"Қазір ашық",
+  closed_now:"Жабық",
+  route:"Маршрут",
+  reviews_title:"Келушілер не дейді",
+  no_reviews:"Әзірге пікір жоқ, бірінші болыңыз!",
+  xp_points:"XP ұпай",
+  level:"Деңгей",
+  achievements:"Жетістіктер",
+  achievements_sub:"Белсенділігіңіз үшін алынған марапаттар",
+  locked:"Құлыпталған",
+  unlocked:"Алынды",
+  leaderboard:"Көшбасшылар кестесі",
+  question_of:"СҰРАҚ",
+  explanation:"Түсіндірме",
+  strength_weak:"Әлсіз",
+  strength_mid:"Орташа",
+  strength_strong:"Күшті",
+  remember_me:"Мені есте сақтау",
+  forgot_pass:"Құпия сөзді ұмыттыңыз ба?",
+  create_profile:"Космос профиліңізді жасаңыз",
+  welcome_title:"КОСМОГИДҚА ҚОШ КЕЛДІҢІЗ",
+  retry:"Қайталау",
+  load_error:"Деректерді жүктеу мүмкін болмады",
+  online_now:"қазір онлайн",
+  newest:"Жаңалары",
+  popular:"Танымал",
+  discussed:"Талқылануда",
+  recent_activity:"Соңғы әрекеттер",
+  activity_added_news:"жаңалық қосты",
+  activity_added_topic:"тақырып ашты",
+  activity_added_comment:"пікір қалдырды",
+  activity_blocked_user:"пайдаланушыны бұғаттады",
+  activity_registered:"тіркелді",
+  analytics:"Analytics",
+  period_today:"Бүгін",
+  period_week:"7 күн",
+  period_month:"30 күн",
+  period_year:"12 ай",
+  all_categories:"Барлық санаттар",
+  no_data_yet:"Деректер әлі жоқ"
+},
+ru:{
+  nav_home:"Главная",nav_planet:"Планетарии",nav_cosmos:"Космос",nav_missions:"Миссии",
+  nav_news:"Новости",nav_articles:"Статьи",nav_quiz:"Квиз",nav_horoscope:"Гороскоп",
+  nav_numerology:"Нумерология",nav_forum:"Форум",
+  fav:"Избранное",profile:"Профиль",login:"Войти",register:"Регистрация",logout:"Выйти",
+  hero_eyebrow:"КОСМОГИД — путешествие во вселенную",
+  hero_title:"КОСМОГИД",hero_tag:"Исследуй Вселенную рядом с собой",
+  cta_planet:"Найти планетарии",cta_cosmos:"Исследовать космос",
+  sections_title:"Что вы найдёте",
+  today_title:"Сегодня в космосе",
+  today_news:"Сегодняшние космические новости",
+  see_all:"Смотреть все",
+  planetariums:"Планетарии",planetariums_sub:"Каталог планетариев Казахстана и мира",
+  search_ph:"Поиск по названию или городу...",
+  city:"Город",rating:"Рейтинг",kids:"Для детей",adults:"Для взрослых",tours3d:"3D-программы",
+  more:"Подробнее",
+  cosmos:"Космос",cosmos_sub:"Солнечная система, звёзды, галактики и чёрные дыры",
+  solar:"Солнечная система",
+  distance:"Расстояние от Солнца",diameter:"Диаметр",temp:"Температура",moons:"Количество спутников",
+  daylen:"Продолжительность суток",yearlen:"Продолжительность года",facts:"Интересные факты",
+  constellations:"Созвездия",constellations_sub:"Интерактивное изучение ночного неба",
+  main_stars:"Основные звёзды",mythology:"Мифология",best_time:"Лучшее время для наблюдения",direction:"Направление на небе",
+  whats_up:"Что сейчас видно на небе?",
+  missions:"Космические миссии",missions_sub:"История исследования космоса",
+  agency:"Агентство",participants:"Участники",result:"Результат",
+  news:"Космические новости",news_sub:"Последние новости астрономии",
+  newplanets:"Новые открытые планеты",discovered:"Дата открытия",discoverer:"Кто обнаружил",telescope:"Телескоп",
+  articles:"Статьи об астрономии",articles_sub:"Глубокие знания о вселенной",
+  author:"Автор",views:"Просмотры",add_fav:"В избранное",in_fav:"В избранном",
+  horoscope:"Гороскоп",horoscope_sub:"Выберите свой знак зодиака",
+  today_horo:"Гороскоп на сегодня",
+  h_general:"Общий прогноз",h_love:"Любовь",h_work:"Учёба/работа",h_money:"Финансы",h_mood:"Настроение",h_energy:"Энергия",h_tip:"Совет дня",
+  horo_disclaimer:"Раздел носит развлекательный характер и не является научным прогнозом.",
+  numerology:"Нумерология",numerology_sub:"Расчёт числа жизненного пути по дате рождения",
+  birthdate:"Дата рождения",calc:"Рассчитать",lifepath:"Число жизненного пути",
+  lucky_days:"Мои удачные дни",today_lbl:"Сегодня",in3days:"Через 3 дня",nextweek:"Следующая неделя",
+  quiz:"Астрономический квиз",quiz_sub:"Проверьте свои знания",start_quiz:"Начать тест",
+  q_of:"вопрос",correct:"Правильно!",wrong:"Неверно!",quiz_result:"Результат",quiz_level:"Уровень",
+  lvl0:"🌱 Новичок",lvl1:"🔭 Любитель",lvl2:"🚀 Астроном",lvl3:"🌌 Эксперт",
+  restart:"Начать заново",
+  forum:"Космический форум",forum_sub:"Сообщество любителей космоса",
+  new_topic:"Новая тема",topic_title:"Название темы",category:"Категория",create:"Создать",
+  write_msg:"Напишите сообщение...",send:"Отправить",
+  topics:"тем",posts:"сообщений",author_lbl:"Автор",created:"Дата создания",
+  edit:"Редактировать",delete:"Удалить",report:"Пожаловаться",
+  auth_login_title:"Вход в аккаунт",auth_reg_title:"Регистрация",
+  username:"Имя пользователя",email:"Email",password:"Пароль",password2:"Повтор пароля",
+  no_account:"Нет аккаунта?",have_account:"Уже есть аккаунт?",
+  submit_login:"Войти",submit_reg:"Зарегистрироваться",
+  my_profile:"Мой профиль",member_since:"Дата регистрации",
+  msgs_count:"Сообщений на форуме",topics_count:"Созданных тем",quiz_best:"Результат квиза",
+  fav_articles:"Избранные статьи",fav_planet:"Избранные планетарии",
+  settings:"Настройки",change_name:"Изменить имя",change_pass:"Изменить пароль",save:"Сохранить",
+  favorites:"Избранное",favorites_sub:"Ваши сохранённые материалы",empty_fav:"Пока нет избранного",
+  global_search:"Поиск...",results_for:"Результаты поиска:",no_results:"Ничего не найдено",
+  comments:"Комментарии",add_comment:"Оставить комментарий...",
+  footer_about:"О проекте",footer_contacts:"Контакты",
+  admin_panel:"ADMIN PANEL",dashboard:"Dashboard",users:"Пользователи",
+  moderation:"Модерация форума",comments_mod:"Модерация комментариев",
+  total_users:"Всего пользователей",active_users:"Активных пользователей",total_posts:"Сообщений форума",
+  total_topics:"Количество тем",total_comments:"Количество комментариев",total_planet:"Количество планетариев",
+  total_news:"Количество новостей",total_articles:"Количество статей",total_fav:"Количество избранного",
+  add_new:"Добавить",actions:"Действия",status:"Статус",published:"Опубликовано",draft:"Черновик",
+  role:"Роль",block:"Заблокировать",unblock:"Разблокировать",back:"Назад",cancel:"Отмена",
+  fill_all:"Заполните все поля",pass_mismatch:"Пароли не совпадают",
+  user_exists:"Такой пользователь уже существует",wrong_creds:"Неверный логин или пароль",
+  welcome_back:"Добро пожаловать",registered_ok:"Регистрация прошла успешно",loggedout:"Вы вышли из системы",
+  saved_ok:"Сохранено",added_fav:"Добавлено в избранное",removed_fav:"Удалено из избранного",
+  topic_created:"Тема создана",post_sent:"Сообщение отправлено",need_login:"Сначала войдите в систему",
+  deleted:"Удалено",blocked:"Заблокирован",unblocked:"Разблокирован",
+  demo_hint:"Демо: admin / admin123",
+  home:"Главная",
+  hero_badge:"ПЛАТФОРМА ИССЛЕДОВАНИЯ КОСМОСА",
+  hero_desc:"Планетарии, космические новости, планеты, созвездия и историю освоения космоса — в одном месте.",
+  today_dashboard:"КОСМОС СЕГОДНЯ",
+  moon_phase:"Фаза Луны",
+  visible_planets:"Видимые планеты",
+  fact_of_day:"Факт дня",
+  search_placeholder:"Марс, планетарий, форум...",
+  search_hint:"Начните вводить запрос, Enter — перейти к результату",
+  notifications:"Уведомления",
+  no_notifications:"Новых уведомлений нет",
+  mark_all_read:"Отметить всё как прочитанное",
+  reply_topic:"ответили на вашу тему",
+  reaction_comment:"ваш комментарий получил реакцию",
+  new_achievement:"Вы получили новое достижение",
+  sort_by:"Сортировка",
+  sort_rating:"По рейтингу",
+  sort_name:"По названию",
+  sort_city:"По городу",
+  open_now:"Открыто сейчас",
+  closed_now:"Закрыто",
+  route:"Маршрут",
+  reviews_title:"Что думают посетители",
+  no_reviews:"Отзывов пока нет, будьте первым!",
+  xp_points:"XP очков",
+  level:"Уровень",
+  achievements:"Достижения",
+  achievements_sub:"Награды за вашу активность на платформе",
+  locked:"Заблокировано",
+  unlocked:"Получено",
+  leaderboard:"Таблица лидеров",
+  question_of:"ВОПРОС",
+  explanation:"Объяснение",
+  strength_weak:"Слабый",
+  strength_mid:"Средний",
+  strength_strong:"Надёжный",
+  remember_me:"Запомнить меня",
+  forgot_pass:"Забыли пароль?",
+  create_profile:"Создай свой космический профиль",
+  welcome_title:"ДОБРО ПОЖАЛОВАТЬ В КОСМОГИД",
+  retry:"Повторить",
+  load_error:"Не удалось загрузить данные",
+  online_now:"сейчас онлайн",
+  newest:"Новейшие",
+  popular:"Популярные",
+  discussed:"Обсуждаемые",
+  recent_activity:"Последние действия",
+  activity_added_news:"добавил новость",
+  activity_added_topic:"создал тему",
+  activity_added_comment:"оставил комментарий",
+  activity_blocked_user:"заблокировал пользователя",
+  activity_registered:"зарегистрировался",
+  analytics:"Analytics",
+  period_today:"Сегодня",
+  period_week:"7 дней",
+  period_month:"30 дней",
+  period_year:"12 месяцев",
+  all_categories:"Все категории",
+  no_data_yet:"Данных пока нет"
+}
+};
+let LANG = "kz";
+function t(k){ return (I18N[LANG] && I18N[LANG][k]) || k; }
+function tf(objKZ,objRU){ return LANG==="kz" ? objKZ : objRU; }
+
+/* ---------- seed data ---------- */
+const PLANETS = [
+ {id:"sun",em:"☀️",nameKZ:"Күн",nameRU:"Солнце",color:"#ffd27a",distance:"0 км",diameter:"1 392 700 км",temp:"5 500 °C",moons:"0",day:"~27 күн",year:"—",
+  descKZ:"Күн жүйесінің орталығы, ыстық плазмадан тұратын жұлдыз. Барлық планеталар оның айналасында айналады.",
+  descRU:"Центр Солнечной системы — раскалённая звезда из плазмы, вокруг которой вращаются все планеты.",
+  factKZ:"Күннің көлемі Жерден 1,3 миллион есе үлкен.",factRU:"Объём Солнца превышает объём Земли примерно в 1,3 миллиона раз."},
+ {id:"mercury",em:"☿",nameKZ:"Меркурий",nameRU:"Меркурий",color:"#b7b0a8",distance:"57.9 млн км",diameter:"4 879 км",temp:"-180…430 °C",moons:"0",day:"59 жер тәулігі",year:"88 жер тәулігі",
+  descKZ:"Күнге ең жақын және ең кіші планета. Атмосферасы жоқтың қасы, сондықтан температура ауытқуы өте күшті.",
+  descRU:"Ближайшая к Солнцу и самая маленькая планета. Атмосферы почти нет, поэтому перепады температур огромны.",
+  factKZ:"Меркурийдегі бір күн екі жылдан ұзағырақ.",factRU:"Один день на Меркурии длится дольше, чем два его года."},
+ {id:"venus",em:"♀",nameKZ:"Венера",nameRU:"Венера",color:"#e8c27a",distance:"108.2 млн км",diameter:"12 104 км",temp:"~465 °C",moons:"0",day:"243 жер тәулігі",year:"225 жер тәулігі",
+  descKZ:"Күн жүйесіндегі ең ыстық планета, күшті парниктік эффектісі бар қою атмосферасымен ерекшеленеді.",
+  descRU:"Самая горячая планета Солнечной системы благодаря плотной атмосфере и сильному парниковому эффекту.",
+  factKZ:"Венера өз осінен кері бағытта айналады.",factRU:"Венера вращается вокруг своей оси в обратном направлении."},
+ {id:"earth",em:"🌍",nameKZ:"Жер",nameRU:"Земля",color:"#4fd6ff",distance:"149.6 млн км",diameter:"12 742 км",temp:"-88…58 °C",moons:"1",day:"24 сағат",year:"365.25 күн",
+  descKZ:"Біздің үйіміз — өмір бар деп белгілі жалғыз планета, беткейінің 70%-ы сумен жабылған.",
+  descRU:"Наш дом — единственная известная планета с жизнью, 70% поверхности которой покрыто водой.",
+  factKZ:"Жер — Күн жүйесіндегі ең тығыз планета.",factRU:"Земля — самая плотная планета Солнечной системы."},
+ {id:"mars",em:"♂",nameKZ:"Марс",nameRU:"Марс",color:"#ff7a5c",distance:"227.9 млн км",diameter:"6 779 км",temp:"-140…20 °C",moons:"2",day:"24.6 сағат",year:"687 жер тәулігі",
+  descKZ:"«Қызыл планета» деп аталады, топырағындағы темір тотығуының арқасында қызғылт түсті.",
+  descRU:"«Красная планета», получившая цвет из-за оксида железа в грунте.",
+  factKZ:"Марста Күн жүйесіндегі ең биік жанартау — Олимп тауы орналасқан.",factRU:"На Марсе находится гора Олимп — самый высокий вулкан в Солнечной системе."},
+ {id:"jupiter",em:"♃",nameKZ:"Юпитер",nameRU:"Юпитер",color:"#d9a66c",distance:"778.5 млн км",diameter:"139 820 км",temp:"-110 °C",moons:"95",day:"9.9 сағат",year:"12 жер жылы",
+  descKZ:"Күн жүйесіндегі ең үлкен планета, негізінен сутегі мен гелийден тұрады, атақты Үлкен Қызыл Дақ бар.",
+  descRU:"Крупнейшая планета Солнечной системы, состоящая из водорода и гелия, со знаменитым Большим красным пятном.",
+  factKZ:"Юпитердің магнит өрісі Жердегіден 20 000 есе күшті.",factRU:"Магнитное поле Юпитера в 20 000 раз сильнее земного."},
+ {id:"saturn",em:"♄",nameKZ:"Сатурн",nameRU:"Сатурн",color:"#f0d9a0",distance:"1.43 млрд км",diameter:"116 460 км",temp:"-140 °C",moons:"146",day:"10.7 сағат",year:"29 жер жылы",
+  descKZ:"Мұз бен тас бөлшектерінен тұратын әсем сақиналарымен танымал алып планета.",
+  descRU:"Планета-гигант, известная своими эффектными кольцами изо льда и камня.",
+  factKZ:"Сатурн су бетінде жүзе алатындай жеңіл.",factRU:"Сатурн настолько лёгкий, что мог бы плавать в воде."},
+ {id:"uranus",em:"♅",nameKZ:"Уран",nameRU:"Уран",color:"#9be3e0",distance:"2.87 млрд км",diameter:"50 724 км",temp:"-195 °C",moons:"27",day:"17.2 сағат",year:"84 жер жылы",
+  descKZ:"Осі бойымен «жатып» айналатын мұз алыбы, көгілдір-жасыл түсі метан газына байланысты.",
+  descRU:"Ледяной гигант, вращающийся «лёжа на боку»; сине-зелёный цвет обусловлен метаном.",
+  factKZ:"Уранда бір маусым 21 жылға созылады.",factRU:"Один сезон на Уране длится 21 год."},
+ {id:"neptune",em:"♆",nameKZ:"Нептун",nameRU:"Нептун",color:"#5b7cff",distance:"4.5 млрд км",diameter:"49 244 км",temp:"-200 °C",moons:"14",day:"16.1 сағат",year:"165 жер жылы",
+  descKZ:"Күннен ең алыс планета, Күн жүйесіндегі ең күшті желдер осында тіркелген.",
+  descRU:"Самая дальняя от Солнца планета, где зафиксированы самые сильные ветра в Солнечной системе.",
+  factKZ:"Нептундағы желдің жылдамдығы 2 100 км/сағ жетеді.",factRU:"Скорость ветра на Нептуне достигает 2100 км/ч."}
+];
+
+const PLANETARIUMS_SEED = [
+ {id:"astana",nameKZ:"Астана планетарийі",nameRU:"Астанинский планетарий",city:"Астана",country:"Қазақстан",rating:4.8,em:"🌍",
+  tags:["3d","family"],hours:"10:00–20:00",contact:"+7 7172 00 00 00",
+  descKZ:"Отбасымен келуге ыңғайлы, заманауи 3D-күмбез бағдарламалары бар ірі планетарий.",
+  descRU:"Крупный планетарий с современными 3D-программами под куполом, удобен для семейного посещения."},
+ {id:"aktobe",nameKZ:"Ақтөбе планетарийі",nameRU:"Планетарий Актобе",city:"Ақтөбе",country:"Қазақстан",rating:4.5,em:"🔭",
+  tags:["astro","lectures"],hours:"09:00–18:00",contact:"+7 7132 00 00 00",
+  descKZ:"Астрономиялық бағдарламалары мен түнгі аспанды бақылау лекцияларымен танымал.",
+  descRU:"Известен астрономическими программами и лекциями по наблюдению ночного неба."},
+ {id:"almaty",nameKZ:"Алматы ғарыш орталығы",nameRU:"Алматинский космоцентр",city:"Алматы",country:"Қазақстан",rating:4.7,em:"🪐",
+  tags:["3d","excursion","adult"],hours:"10:00–21:00",contact:"+7 727 00 00 00",
+  descKZ:"Экскурсиялар мен ересектерге арналған терең астрофизика бағдарламалары ұсынылады.",
+  descRU:"Предлагает экскурсии и углублённые астрофизические программы для взрослых."},
+ {id:"shymkent",nameKZ:"Шымкент обсерваториясы",nameRU:"Шымкентская обсерватория",city:"Шымкент",country:"Қазақстан",rating:4.3,em:"⭐",
+  tags:["observation","family"],hours:"11:00–19:00",contact:"+7 7252 00 00 00",
+  descKZ:"Телескоп арқылы тікелей аспан бақылауды ұсынатын шағын, жайлы обсерватория.",
+  descRU:"Небольшая уютная обсерватория с прямым наблюдением неба через телескоп."},
+ {id:"karaganda",nameKZ:"Қарағанды планетарийі",nameRU:"Планетарий Караганды",city:"Қарағанды",country:"Қазақстан",rating:4.2,em:"🌌",
+  tags:["lectures","adult"],hours:"10:00–18:00",contact:"+7 7212 00 00 00",
+  descKZ:"Университетпен серіктестікте жұмыс істейтін, ғылыми лекцияларға бай орталық.",
+  descRU:"Работает в партнёрстве с университетом, богат научными лекциями."}
+];
+
+const CONSTELLATIONS_SEED = [
+ {id:"ursamajor",em:"🐻",nameKZ:"Үлкен Аю",nameRU:"Большая Медведица",stars:"Дубхе, Мерак, Фекда, Мегрец, Алиот, Мицар, Алькаид",
+  descKZ:"Солтүстік аспанның ең танымал шоқжұлдызы, «шелек» пішінімен ерекшеленеді.",
+  descRU:"Самое узнаваемое созвездие северного неба, напоминающее по форме ковш.",
+  mythKZ:"Ежелгі гректер оны нимфа Каллистоның аюға айналған бейнесі деп есептеген.",
+  mythRU:"Древние греки связывали его с нимфой Каллисто, обращённой в медведицу.",
+  best:"Наурыз–шілде",dir:"Солтүстік"},
+ {id:"ursaminor",em:"🐻",nameKZ:"Кіші Аю",nameRU:"Малая Медведица",stars:"Полярная жұлдыз (Киночи), Кохаб, Ферхад",
+  descKZ:"Құрамында аспандағы солтүстік бағытты көрсететін Темірқазық (Полярлық) жұлдызы бар.",
+  descRU:"Содержит Полярную звезду, указывающую направление на север.",
+  mythKZ:"Мифте нимфа Иданың бейнесі ретінде суреттеледі.",
+  mythRU:"В мифах связывается с нимфой Идой, вскормившей Зевса.",
+  best:"Жыл бойы",dir:"Солтүстік"},
+ {id:"orion",em:"🏹",nameKZ:"Орион",nameRU:"Орион",stars:"Бетельгейзе, Ригель, Беллатрикс, Минтака, Алнилам, Алнитак",
+  descKZ:"Аспандағы ең әсем әрі танымал шоқжұлдыздардың бірі, «Орион белбеуімен» ерекшеленеді.",
+  descRU:"Одно из самых узнаваемых созвездий неба, знаменито «поясом Ориона».",
+  mythKZ:"Грек мифологиясында аңшы алыпты бейнелейді.",
+  mythRU:"В греческой мифологии изображает могучего охотника.",
+  best:"Желтоқсан–наурыз",dir:"Оңтүстік-шығыс"},
+ {id:"cassiopeia",em:"👑",nameKZ:"Кассиопея",nameRU:"Кассиопея",stars:"Шедар, Каф, Гамма Кас, Рукба, Сегин",
+  descKZ:"Аспанда «W» әрпіне ұқсас пішінімен танылатын жарқын шоқжұлдыз.",
+  descRU:"Яркое созвездие, узнаваемое по форме буквы «W».",
+  mythKZ:"Мифте — тәкаппар патшайым Кассиопеяның бейнесі.",
+  mythRU:"В мифах — образ тщеславной царицы Кассиопеи.",
+  best:"Қыркүйек–ақпан",dir:"Солтүстік"},
+ {id:"andromeda",em:"🌌",nameKZ:"Андромеда",nameRU:"Андромеда",stars:"Альферац, Мирах, Аламак",
+  descKZ:"Атақты Андромеда галактикасын көзбен көруге болатын бағытты көрсетеді.",
+  descRU:"Указывает направление на знаменитую галактику Андромеды, видимую невооружённым глазом.",
+  mythKZ:"Мифте құтқарылған патша қызы Андромеданың бейнесі.",
+  mythRU:"В мифах — образ спасённой царевны Андромеды.",
+  best:"Қазан–қараша",dir:"Солтүстік-шығыс"},
+ {id:"cygnus",em:"🦢",nameKZ:"Аққу",nameRU:"Лебедь",stars:"Денеб, Садр, Гиенах, Дельта Лебедя, Альбирео",
+  descKZ:"«Солтүстік крест» деп те аталатын, Құс жолының бойымен созылған шоқжұлдыз.",
+  descRU:"Также известно как «Северный крест», простирается вдоль Млечного Пути.",
+  mythKZ:"Аққуға айналған Зевстің бейнесімен байланысты.",
+  mythRU:"Связывается с Зевсом, принявшим облик лебедя.",
+  best:"Маусым–қыркүйек",dir:"Зенит"}
+];
+
+const MISSIONS_SEED = [
+ {year:"1957",titleKZ:"Спутник-1",titleRU:"Спутник-1",agency:"СССР / КСРО",em:"🛰️",
+  descKZ:"Адамзат тарихындағы алғашқы жасанды жер серігі ғарышқа ұшырылды.",descRU:"Запущен первый в истории человечества искусственный спутник Земли."},
+ {year:"1961",titleKZ:"Адамның алғашқы ұшуы",titleRU:"Первый человек в космосе",agency:"СССР / КСРО",em:"🚀",
+  descKZ:"Юрий Гагарин Восток-1 кемесімен Жерді айналып өтті.",descRU:"Юрий Гагарин совершил облёт Земли на корабле «Восток-1»."},
+ {year:"1969",titleKZ:"Айға қону",titleRU:"Высадка на Луне",agency:"NASA",em:"🌕",
+  descKZ:"Аполлон-11 миссиясы аясында адам алғаш рет Ай бетіне қадам басты.",descRU:"В рамках миссии «Аполлон-11» человек впервые ступил на поверхность Луны."},
+ {year:"1998",titleKZ:"ХҒС құрылысының басталуы",titleRU:"Начало строительства МКС",agency:"NASA / Роскосмос / ESA",em:"🛰️",
+  descKZ:"Халықаралық ғарыш станциясының алғашқы модулі орбитаға шығарылды.",descRU:"На орбиту выведен первый модуль Международной космической станции."},
+ {year:"2020",titleKZ:"Жаңа пилотталатын миссиялар",titleRU:"Новые пилотируемые миссии",agency:"NASA / SpaceX",em:"🧑‍🚀",
+  descKZ:"Commercial Crew бағдарламасы аясында жеке компания алғаш рет адамдарды орбитаға жеткізді.",descRU:"В рамках программы Commercial Crew частная компания впервые доставила людей на орбиту."},
+ {year:"2026",titleKZ:"Заманауи ғарыш зерттеулері",titleRU:"Современные космические исследования",agency:"NASA / ESA / Роскосмос / CNSA",em:"🔭",
+  descKZ:"Айды игеру, Марсқа дайындық және жаңа телескоптар арқылы экзопланеталарды зерттеу жалғасуда.",descRU:"Продолжается освоение Луны, подготовка к Марсу и изучение экзопланет новыми телескопами."}
+];
+
+const NEWS_SEED = [
+ {id:"n1",cat:"exo",titleKZ:"Жерге ұқсас жаңа экзопланета табылды",titleRU:"Обнаружена новая экзопланета, похожая на Землю",em:"🪐",date:"2026-08-28",
+  descKZ:"Ғалымдар жасанды жұлдыздан 40 жарық жыл қашықтықта орналасқан тас планетаны тапты.",descRU:"Учёные обнаружили каменистую планету в 40 световых годах от Земли."},
+ {id:"n2",cat:"nasa",titleKZ:"NASA жаңа Ай миссиясының күнін жариялады",titleRU:"NASA объявило дату новой лунной миссии",em:"🌕",date:"2026-08-20",
+  descKZ:"Artemis бағдарламасы аясында келесі экипаждық ұшу мерзімі белгіленді.",descRU:"В рамках программы Artemis назначена дата следующего пилотируемого полёта."},
+ {id:"n3",cat:"telescope",titleKZ:"Жаңа телескоп қара құрдымның суретін түсірді",titleRU:"Новый телескоп сделал снимок чёрной дыры",em:"🕳️",date:"2026-08-15",
+  descKZ:"Обсерватория орталық галактикадағы қара құрдымның бұрын-соңды болмаған анық суретін алды.",descRU:"Обсерватория получила невиданно чёткий снимок чёрной дыры в центре галактики."},
+ {id:"n4",cat:"esa",titleKZ:"ESA Марс топырағының үлгісін зерттеуде",titleRU:"ESA исследует образцы марсианского грунта",em:"🔴",date:"2026-08-10",
+  descKZ:"Еуропа ғарыш агенттігі Марстан әкелінген топырақ үлгілерін талдауда.",descRU:"Европейское космическое агентство анализирует образцы грунта, доставленные с Марса."},
+ {id:"n5",cat:"galaxy",titleKZ:"Алыс галактикада жаңа жұлдыз түзілу аймағы ашылды",titleRU:"В далёкой галактике открыт новый регион звездообразования",em:"🌌",date:"2026-08-02",
+  descKZ:"Астрономдар галактикада белсенді жұлдыз тудырушы бұлтты тіркеді.",descRU:"Астрономы зафиксировали активное облако звездообразования в галактике."},
+ {id:"n6",cat:"solar",titleKZ:"Күн белсенділігі жоғарылады",titleRU:"Зафиксирован рост солнечной активности",em:"☀️",date:"2026-07-27",
+  descKZ:"Ғалымдар үлкен күн сплэштерінің ықтималдығы артқанын хабарлады.",descRU:"Учёные сообщили о возросшей вероятности крупных солнечных вспышек."}
+];
+
+const EXO_PLANETS = [
+ {nameKZ:"Кеплер-99с",nameRU:"Kepler-99c",date:"2026-08-28",who:"Халықаралық зерттеу тобы / Международная группа",telescope:"James Webb",dist:"40 жарық жыл / световых лет",
+  descKZ:"Тас беткейі бар, Жерден екі есе үлкен экзопланета.",descRU:"Каменистая экзопланета вдвое крупнее Земли."}
+];
+
+const ARTICLES_SEED = [
+ {id:"a1",catKZ:"Ғалам",catRU:"Космос",em:"🌌",titleKZ:"Қара құрдымдар қалай пайда болады?",titleRU:"Как образуются чёрные дыры?",
+  author:"А. Serikov",date:"2026-07-12",views:1830,
+  descKZ:"Ірі жұлдыздардың өмір циклінің соңы қара құрдымның тууына қалай әкелетінін түсіндіреміз.",
+  descRU:"Разбираем, как финал жизненного цикла массивных звёзд приводит к рождению чёрной дыры."},
+ {id:"a2",catKZ:"Планетарий",catRU:"Планетарий",em:"🔭",titleKZ:"Планетарийге бару: не білу керек?",titleRU:"Поход в планетарий: что нужно знать?",
+  author:"Ж. Ахметова",date:"2026-06-30",views:1240,
+  descKZ:"Отбасымен планетарийге баруға дайындалудың пайдалы кеңестері.",descRU:"Полезные советы по подготовке к семейному походу в планетарий."},
+ {id:"a3",catKZ:"Астрономия",catRU:"Астрономия",em:"⭐",titleKZ:"Жұлдыздардың өмірлік циклі",titleRU:"Жизненный цикл звёзд",
+  author:"Д. Нурланов",date:"2026-06-14",views:2210,
+  descKZ:"Жұлдыздың тууынан бастап ақ ергежейлі немесе жарылысқа дейінгі жолы.",descRU:"Путь звезды от рождения до белого карлика или взрыва сверхновой."},
+ {id:"a4",catKZ:"Ғарыштану",catRU:"Космонавтика",em:"🚀",titleKZ:"МКС-те өмір қалай өтеді?",titleRU:"Как проходит жизнь на МКС?",
+  author:"Т. Байжанов",date:"2026-05-22",views:980,
+  descKZ:"Ғарышкерлердің станциядағы күнделікті жұмысы мен тұрмысы.",descRU:"Повседневная работа и быт космонавтов на станции."},
+ {id:"a5",catKZ:"Экзопланеталар",catRU:"Экзопланеты",em:"🪐",titleKZ:"Тіршілікке қолайлы аймақ дегеніміз не?",titleRU:"Что такое зона обитаемости?",
+  author:"С. Қасымова",date:"2026-05-09",views:1560,
+  descKZ:"Планетада сұйық су болуы үшін жұлдызға қандай қашықтық қажет.",descRU:"На каком расстоянии от звезды планета может удерживать жидкую воду."},
+ {id:"a6",catKZ:"Тарих",catRU:"История",em:"🛰️",titleKZ:"Ғарыш жарысы қалай басталды?",titleRU:"Как начиналась космическая гонка?",
+  author:"Р. Ермеков",date:"2026-04-18",views:1745,
+  descKZ:"КСРО мен АҚШ арасындағы бәсекелестіктің тарихы.",descRU:"История соперничества между СССР и США в освоении космоса."}
+];
+
+const QUIZ_SEED = [
+ {qKZ:"Қай планета Күн жүйесіндегі ең үлкен планета?",qRU:"Какая планета самая большая в Солнечной системе?",
+  optKZ:["Жер","Марс","Юпитер","Нептун"],optRU:["Земля","Марс","Юпитер","Нептун"],correct:2},
+ {qKZ:"Күнге ең жақын планета қайсы?",qRU:"Какая планета ближе всего к Солнцу?",
+  optKZ:["Венера","Меркурий","Жер","Марс"],optRU:["Венера","Меркурий","Земля","Марс"],correct:1},
+ {qKZ:"Адамзаттың алғашқы жер серігінің атауы қандай?",qRU:"Как назывался первый искусственный спутник Земли?",
+  optKZ:["Восток-1","Аполлон-11","Спутник-1","Союз-1"],optRU:["Восток-1","Аполлон-11","Спутник-1","Союз-1"],correct:2},
+ {qKZ:"Аспанда солтүстікті көрсететін жұлдыз қалай аталады?",qRU:"Как называется звезда, указывающая направление на север?",
+  optKZ:["Сириус","Полярлық жұлдыз","Вега","Альтаир"],optRU:["Сириус","Полярная звезда","Вега","Альтаир"],correct:1},
+ {qKZ:"Марс неге «қызыл планета» деп аталады?",qRU:"Почему Марс называют «красной планетой»?",
+  optKZ:["Атмосферасы қызыл","Топырағында темір тотығы бар","Күннен қызыл сәуле алады","Жанартаулары бар"],
+  optRU:["Красная атмосфера","В грунте есть оксид железа","Получает красный свет от Солнца","Из-за вулканов"],correct:1},
+ {qKZ:"1969 жылы адам не жасады?",qRU:"Что сделал человек в 1969 году?",
+  optKZ:["Марсқа қонды","Айға қонды","ХҒС салды","Юпитерге ұшты"],optRU:["Высадился на Марсе","Высадился на Луне","Построил МКС","Полетел к Юпитеру"],correct:1},
+ {qKZ:"Күн жүйесіндегі ең кіші планета қайсы?",qRU:"Какая планета самая маленькая в Солнечной системе?",
+  optKZ:["Марс","Меркурий","Плутон","Венера"],optRU:["Марс","Меркурий","Плутон","Венера"],correct:1},
+ {qKZ:"Сатурнның ерекшелігі неде?",qRU:"Чем знаменит Сатурн?",
+  optKZ:["Ыстық беті","Әсем сақиналары","Қызыл дағы","Ай саны"],optRU:["Горячая поверхность","Эффектные кольца","Красное пятно","Количество лун"],correct:1}
+];
+
+const ZODIAC = [
+ {id:"aries",em:"♈",kz:"Тоқты",ru:"Овен"},{id:"taurus",em:"♉",kz:"Торпақ",ru:"Телец"},
+ {id:"gemini",em:"♊",kz:"Егіздер",ru:"Близнецы"},{id:"cancer",em:"♋",kz:"Шаян",ru:"Рак"},
+ {id:"leo",em:"♌",kz:"Арыстан",ru:"Лев"},{id:"virgo",em:"♍",kz:"Бикеш",ru:"Дева"},
+ {id:"libra",em:"♎",kz:"Таразы",ru:"Весы"},{id:"scorpio",em:"♏",kz:"Шаян жұлдызы",ru:"Скорпион"},
+ {id:"sagittarius",em:"♐",kz:"Мерген",ru:"Стрелец"},{id:"capricorn",em:"♑",kz:"Тауешкі",ru:"Козерог"},
+ {id:"aquarius",em:"♒",kz:"Суұсар",ru:"Водолей"},{id:"pisces",em:"♓",kz:"Балықтар",ru:"Рыбы"}
+];
+const HORO_POOL_KZ = {
+ general:["Бүгін жаңа мүмкіндіктерге ашық болыңыз.","Күн тыныш әрі тұрақты өтеді.","Шешім қабылдау үшін қолайлы кез.","Айналаңызға көбірек назар аударыңыз."],
+ love:["Жақындарыңызбен жылы сөйлесу пайдалы болады.","Сезімдеріңізді ашық білдіріңіз.","Қарым-қатынаста түсіністік артады.","Жалғызбасты болсаңыз, жаңа таныстық мүмкін."],
+ work:["Жұмыста шоғырлану оңайырақ болады.","Жаңа идеяңызды бөлісіп көріңіз.","Ұсақ мәселелерге алаңдамаңыз.","Оқуда табандылық нәтиже береді."],
+ money:["Қаржыңызды жоспарлауға уақыт бөліңіз.","Артық шығыннан аулақ болған жөн.","Кішкене үнемдеу үлкен нәтиже береді.","Инвестицияға асықпаңыз."],
+ mood:["Көңіл-күйіңіз жоғары болады.","Аздап демалыс қажет болуы мүмкін.","Ішкі тыныштық сізге күш береді.","Күлкі мен жеңілдік басым болады."],
+ energy:["Энергия деңгейіңіз жоғары.","Дене шынықтыруға уақыт бөліңіз.","Ұйқыға көбірек мән беріңіз.","Табиғатта серуендеу пайдалы."],
+ tip:["Кішкентай қадамдардан бастаңыз.","Бүгін біреуге көмектесіп көріңіз.","Жоспарыңызды қағазға түсіріңіз.","Асықпай, байыппен әрекет етіңіз."]
+};
+const HORO_POOL_RU = {
+ general:["Сегодня стоит быть открытым новым возможностям.","День пройдёт спокойно и стабильно.","Удачное время для принятия решений.","Обратите больше внимания на окружение."],
+ love:["Тёплый разговор с близкими пойдёт на пользу.","Не бойтесь открыто выражать чувства.","Взаимопонимание в отношениях усилится.","Если вы одиноки — возможно новое знакомство."],
+ work:["Сосредоточиться на работе будет легче обычного.","Стоит поделиться новой идеей.","Не стоит переживать из-за мелочей.","В учёбе поможет упорство."],
+ money:["Стоит уделить время планированию финансов.","Лучше избегать лишних трат.","Небольшая экономия даст хороший результат.","С инвестициями не стоит торопиться."],
+ mood:["Настроение будет приподнятым.","Возможно, понадобится немного отдыха.","Внутреннее спокойствие даст силы.","Преобладать будут лёгкость и юмор."],
+ energy:["Уровень энергии сегодня высокий.","Стоит уделить время физической активности.","Обратите больше внимания на сон.","Прогулка на природе будет полезна."],
+ tip:["Начните с маленьких шагов.","Сегодня стоит кому-то помочь.","Запишите свой план на бумаге.","Действуйте не спеша, но уверенно."]
+};
+function pickHoro(pool, seed, key){ const arr=pool[key]; return arr[seed % arr.length]; }
+
+const FORUM_CATS = [
+ {id:"general",em:"💬",kz:"Жалпы әңгіме",ru:"Общение"},
+ {id:"planets",em:"🪐",kz:"Планеталар",ru:"Планеты"},
+ {id:"stars",em:"⭐",kz:"Шоқжұлдыздар",ru:"Созвездия"},
+ {id:"missions",em:"🚀",kz:"Ғарыш миссиялары",ru:"Космические миссии"},
+ {id:"observe",em:"🔭",kz:"Аспанды бақылау",ru:"Наблюдение за небом"},
+ {id:"study",em:"📚",kz:"Оқу",ru:"Учёба"},
+ {id:"questions",em:"❓",kz:"Сұрақтар",ru:"Вопросы по астрономии"},
+ {id:"other",em:"🌌",kz:"Басқа",ru:"Другое"}
+];
+
+const ACHIEVEMENTS = [
+ {id:"moon",em:"🌙",kz:"Ай бақылаушысы",ru:"Наблюдатель Луны",descKZ:"Ай туралы мақаланы немесе жаңалықты таңдаулыға қосыңыз",descRU:"Добавьте статью или новость о Луне в избранное",
+  check:(u,me)=> me.favorites.some(f=>(f.label||"").toLowerCase().includes(LANG==='kz'?'ай':'лун'))},
+ {id:"stars",em:"⭐",kz:"Шоқжұлдыз білгірі",ru:"Знаток созвездий",descKZ:"3 шоқжұлдызды таңдаулыға қосыңыз",descRU:"Добавьте 3 созвездия в избранное",
+  check:(u,me)=> me.favorites.filter(f=>f.type==='constellation').length>=3},
+ {id:"planets",em:"🪐",kz:"Ғалам зерттеушісі",ru:"Исследователь планет",descKZ:"Күн жүйесінің 5 планетасын қараңыз",descRU:"Изучите 5 планет Солнечной системы",
+  check:(u,me)=> me.favorites.filter(f=>f.type==='planet').length>=3},
+ {id:"expert",em:"🚀",kz:"Ғарыш сарапшысы",ru:"Космический эксперт",descKZ:"Квизде 90%+ нәтиже көрсетіңіз",descRU:"Наберите 90%+ в квизе",
+  check:(u,me)=> me.quizResults.some(r=>r.pct>=90)},
+ {id:"amateur",em:"🔭",kz:"Әуесқой астроном",ru:"Астроном-любитель",descKZ:"Квизді бір рет өтіңіз",descRU:"Пройдите квиз хотя бы раз",
+  check:(u,me)=> me.quizResults.length>=1},
+ {id:"community",em:"💬",kz:"Қауымдастық мүшесі",ru:"Участник сообщества",descKZ:"Форумда тақырып жасаңыз немесе хабарлама жазыңыз",descRU:"Создайте тему или сообщение на форуме",
+  check:(u,me,ctx)=> ctx.postsCount>0 || ctx.topicsCount>0},
+ {id:"champion",em:"🏆",kz:"КосмоГид сарапшысы",ru:"Эксперт КосмоГида",descKZ:"5 жетістіктің 5-еуін алыңыз",descRU:"Получите все остальные достижения",
+  check:(u,me,ctx)=> ctx.unlockedCountExceptThis>=6}
+];
+function computeAchievements(user, me, ctx){
+  return ACHIEVEMENTS.map(a=>{
+    let unlocked=false;
+    try{
+      if(a.id==="champion"){
+        const others = ACHIEVEMENTS.filter(x=>x.id!=="champion");
+        const n = others.filter(x=>x.check(user,me,{...ctx})).length;
+        unlocked = n>=others.length;
+      } else { unlocked = a.check(user,me,ctx); }
+    }catch(e){ unlocked=false; }
+    return {...a, unlocked};
+  });
+}
+function moonPhase(date){
+  const synodic = 29.530588853;
+  const known = new Date(2000,0,6,18,14).getTime();
+  const diff = (date.getTime()-known)/86400000;
+  let phase = (diff % synodic)/synodic; if(phase<0) phase+=1;
+  const names = LANG==='kz'
+    ? ["Жаңа ай","Өсу тоғышары","Бірінші ширек","Өсу дөңесі","Толық ай","Кему дөңесі","Соңғы ширек","Кему тоғышары"]
+    : ["Новолуние","Растущий серп","Первая четверть","Растущая луна","Полнолуние","Убывающая луна","Последняя четверть","Убывающий серп"];
+  const idx = Math.floor(phase*8)%8;
+  const emojis = ["🌑","🌒","🌓","🌔","🌕","🌖","🌗","🌘"];
+  return {name:names[idx], em:emojis[idx], illum: Math.round((1-Math.cos(phase*2*Math.PI))/2*100)};
+}
+const DAILY_FACTS_KZ=[
+ "Құс жолы галактикасында шамамен 100-400 миллиард жұлдыз бар.",
+ "Жарық Күннен Жерге жетуге 8 минут 20 секунд жұмсайды.",
+ "Бір күн Венерада бір жылдан ұзағырақ созылады.",
+ "Ғарышта дыбыс таралмайды, себебі онда ауа жоқ.",
+ "Юпитердегі Үлкен Қызыл Дақ — Жерден де үлкен дауыл.",
+ "Нейтронды жұлдыздың бір шай қасығы миллиард тонна салмақ түсіреді.",
+ "Сатурнның сақиналары негізінен мұз бөлшектерінен тұрады."
+];
+const DAILY_FACTS_RU=[
+ "В галактике Млечный Путь около 100–400 миллиардов звёзд.",
+ "Свету требуется 8 минут 20 секунд, чтобы долететь от Солнца до Земли.",
+ "Один день на Венере длится дольше, чем её год.",
+ "В космосе звук не распространяется — там нет воздуха.",
+ "Большое красное пятно на Юпитере — шторм крупнее Земли.",
+ "Чайная ложка вещества нейтронной звезды весила бы миллиард тонн.",
+ "Кольца Сатурна состоят в основном из частиц льда."
+];
+
+/* ---------- storage ---------- */
+let DB = null;  // shared
+let ME  = null; // personal
+const DB_KEY = "kg:db_v2";
+const ME_KEY = "kg:me_v2";
+
+function seedDB(){
+  return {
+    users:[
+      {username:"admin",email:"admin@kosmoguide.kz",password:"admin123",role:"admin",avatarLetter:"A",created:"2026-01-10",blocked:false,xp:0,bestQuizPct:0},
+      {username:"aidana",email:"aidana@mail.kz",password:"12345",role:"user",avatarLetter:"A",created:"2026-03-02",blocked:false,xp:140,bestQuizPct:75},
+      {username:"nurlan",email:"nurlan@mail.kz",password:"12345",role:"user",avatarLetter:"N",created:"2026-04-18",blocked:false,xp:260,bestQuizPct:88}
+    ],
+    planetariums: PLANETARIUMS_SEED.map(p=>({...p})),
+    news: NEWS_SEED.map(n=>({...n,status:"published"})),
+    articles: ARTICLES_SEED.map(a=>({...a,status:"published"})),
+    forumTopics:[
+      {id:"t1",cat:"general",titleKZ:"Барлығыңызбен танысуға қуаныштымын!",titleRU:"Рад со всеми познакомиться!",author:"aidana",views:54,created:"2026-08-01"},
+      {id:"t2",cat:"observe",titleKZ:"Бүгін кешке Юпитерді көру мүмкін бе?",titleRU:"Можно ли сегодня вечером увидеть Юпитер?",author:"nurlan",views:120,created:"2026-08-20"},
+      {id:"t3",cat:"missions",titleKZ:"2026 жылғы Ай миссиялары туралы пікірлеріңіз?",titleRU:"Что думаете о лунных миссиях 2026 года?",author:"admin",views:88,created:"2026-08-25"}
+    ],
+    forumPosts:[
+      {id:"p1",topicId:"t1",author:"nurlan",content:"Қош келдіңіз! Бізге қосылғаныңызға қуаныштымыз.",contentAlt:"Добро пожаловать! Рады, что вы к нам присоединились.",created:"2026-08-01",likes:2},
+      {id:"p2",topicId:"t2",author:"admin",content:"Иә, кешкі сағат 21:00 шамасында оңтүстік бағытта жақсы көрінеді.",contentAlt:"Да, около 21:00 вечера хорошо видно в южном направлении.",created:"2026-08-20",likes:4}
+    ],
+    comments:{}, // key "type:id" -> [{author,text,date,likes}]
+    reports:[],
+    activityLog:[
+      {type:"registered",user:"nurlan",date:"2026-04-18"},
+      {type:"added_topic",user:"admin",date:"2026-08-25"},
+      {type:"added_news",user:"admin",date:"2026-08-28"}
+    ]
+  };
+}
+function seedME(){
+  return { session:null, favorites:[], quizResults:[], lang:"kz", notifications:[], xp:0 };
+}
+function ensureShape(){
+  // backward-compatible defaults so older saved states never crash new code
+  DB.activityLog = DB.activityLog || [];
+  DB.comments = DB.comments || {};
+  DB.reports = DB.reports || [];
+  (DB.users||[]).forEach(u=>{ if(typeof u.xp!=="number") u.xp=0; if(typeof u.bestQuizPct!=="number") u.bestQuizPct=0; if(typeof u.blocked!=="boolean") u.blocked=false; });
+  ME.notifications = ME.notifications || [];
+  ME.favorites = ME.favorites || [];
+  ME.quizResults = ME.quizResults || [];
+  if(typeof ME.xp!=="number") ME.xp = 0;
+}
+async function loadState(){
+  try{ const r = await window.storage.get(DB_KEY, true); DB = r? JSON.parse(r.value): seedDB(); }
+  catch(e){ DB = seedDB(); }
+  try{ const r = await window.storage.get(ME_KEY, false); ME = r? JSON.parse(r.value): seedME(); }
+  catch(e){ ME = seedME(); }
+  ensureShape();
+  await saveDB(); await saveME();
+  if(ME.lang) LANG = ME.lang;
+}
+async function saveDB(){ try{ await window.storage.set(DB_KEY, JSON.stringify(DB), true);}catch(e){console.error(e);} }
+async function saveME(){ try{ await window.storage.set(ME_KEY, JSON.stringify(ME), false);}catch(e){console.error(e);} }
+
+/* ---------- activity / notifications / xp ---------- */
+async function logActivity(type, user){
+  DB.activityLog.unshift({type, user, date:new Date().toISOString()});
+  DB.activityLog = DB.activityLog.slice(0,40);
+  await saveDB();
+}
+async function notify(em, textKZ, textRU){
+  ME.notifications.unshift({em, textKZ, textRU, date:new Date().toISOString(), read:false});
+  ME.notifications = ME.notifications.slice(0,30);
+  await saveME();
+}
+function unreadNotifCount(){ return ME.notifications.filter(n=>!n.read).length; }
+async function addXP(amount){
+  ME.xp = (ME.xp||0) + amount;
+  const u = currentUser();
+  if(u){ u.xp = (u.xp||0) + amount; await saveDB(); }
+  await saveME();
+}
+function xpLevel(xp){ return Math.floor((xp||0)/150) + 1; }
+async function checkNewAchievements(){
+  const u = currentUser(); if(!u) return;
+  ME.seenAchievements = ME.seenAchievements || [];
+  const postsCount = DB.forumPosts.filter(p=>p.author===u.username).length;
+  const topicsCount = DB.forumTopics.filter(tp=>tp.author===u.username).length;
+  const list = computeAchievements(u, ME, {postsCount, topicsCount});
+  const newlyUnlocked = list.filter(a=>a.unlocked && !ME.seenAchievements.includes(a.id));
+  for(const a of newlyUnlocked){
+    ME.seenAchievements.push(a.id);
+    await notify("🏆", `${t('new_achievement')}: ${a.kz}`, `${t('new_achievement')}: ${a.ru}`);
+    toast(`🏆 ${t('new_achievement')}: ${tf(a.kz,a.ru)}`);
+  }
+  if(newlyUnlocked.length) await saveME();
+}
+function pwStrength(pw){
+  if(!pw) return {pct:0,label:"",color:"var(--danger)"};
+  let score=0;
+  if(pw.length>=6) score++;
+  if(pw.length>=10) score++;
+  if(/[A-ZА-ЯӘҒҚҢӨҰҮҺІ]/.test(pw)) score++;
+  if(/[0-9]/.test(pw)) score++;
+  if(/[^a-zA-Zа-яА-Я0-9]/.test(pw)) score++;
+  if(score<=1) return {pct:25,label:t('strength_weak'),color:"var(--danger)"};
+  if(score<=3) return {pct:60,label:t('strength_mid'),color:"var(--gold)"};
+  return {pct:100,label:t('strength_strong'),color:"var(--ok)"};
+}
+
+/* ---------- helpers ---------- */
+function toast(msg){
+  const wrap=document.getElementById("toast-wrap");
+  const d=document.createElement("div"); d.className="toast"; d.textContent=msg;
+  wrap.appendChild(d); setTimeout(()=>d.remove(),3200);
+}
+function esc(s){ return (s||"").replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function currentUser(){ if(!ME.session) return null; return DB.users.find(u=>u.username===ME.session) || null; }
+function isAdmin(){ const u=currentUser(); return u && u.role==="admin"; }
+function fmtDate(d){ try{ return new Date(d).toLocaleDateString(LANG==="kz"?"kk-KZ":"ru-RU",{year:"numeric",month:"long",day:"numeric"}); }catch(e){ return d; } }
+function isFav(type,id){ return ME.favorites.some(f=>f.type===type && f.id===id); }
+async function toggleFav(type,id,label){
+  if(!currentUser()){ toast(t("need_login")); return go("auth-login"); }
+  const idx = ME.favorites.findIndex(f=>f.type===type && f.id===id);
+  if(idx>=0){ ME.favorites.splice(idx,1); toast(t("removed_fav")); }
+  else { ME.favorites.push({type,id,label,added:new Date().toISOString()}); toast(t("added_fav")); }
+  await saveME(); render();
+}
+function commentKey(type,id){ return type+":"+id; }
+function getComments(type,id){ return DB.comments[commentKey(type,id)] || []; }
+async function addComment(type,id,text){
+  if(!currentUser()){ toast(t("need_login")); return; }
+  const k=commentKey(type,id);
+  if(!DB.comments[k]) DB.comments[k]=[];
+  DB.comments[k].push({author:ME.session,text,date:new Date().toISOString(),likes:0});
+  await saveDB();
+  await logActivity("added_comment", ME.session);
+  await addXP(5);
+  await checkNewAchievements();
+  render();
+}
+async function deleteComment(type,id,idx){
+  const k=commentKey(type,id); DB.comments[k].splice(idx,1); await saveDB(); render();
+}
+async function likeComment(type,id,idx){
+  const k=commentKey(type,id); DB.comments[k][idx].likes=(DB.comments[k][idx].likes||0)+1; await saveDB(); render();
+}
+function seededNum(str){ let h=0; for(let i=0;i<str.length;i++){ h=(h*31+str.charCodeAt(i))>>>0;} return h; }
+
+/* ---------- router ---------- */
+let ROUTE = "home", ROUTE_PARAM = null, ADMIN_ROUTE="dashboard";
+function go(route, param){ ROUTE=route; ROUTE_PARAM=param; window.scrollTo(0,0); closeMobileNav(); render(); }
+window.go = go;
+
+let modalContent = null;
+function openModal(html){ modalContent = html; render(); }
+function closeModal(){ modalContent=null; render(); }
+window.closeModal = closeModal;
+
+let mobileNavOpen=false;
+function closeMobileNav(){ mobileNavOpen=false; }
+window.toggleMobileNav = ()=>{ mobileNavOpen=!mobileNavOpen; render(); };
+
+/* ---------- quiz state ---------- */
+let quizState = null; // {idx, score, answered, order}
+function startQuiz(){
+  quizState = {idx:0, score:0, answered:false, selected:null};
+  render();
+}
+function answerQuiz(i){
+  if(quizState.answered) return;
+  quizState.answered=true; quizState.selected=i;
+  if(i===QUIZ_SEED[quizState.idx].correct) quizState.score++;
+}
+async function nextQuiz(){
+  if(quizState.idx < QUIZ_SEED.length-1){ quizState.idx++; quizState.answered=false; quizState.selected=null; render(); }
+  else{
+    const pct = Math.round(quizState.score/QUIZ_SEED.length*100);
+    let level = pct<40? t("lvl0") : pct<65? t("lvl1") : pct<90? t("lvl2") : t("lvl3");
+    if(currentUser()){
+      ME.quizResults.push({date:new Date().toISOString(), score:quizState.score, total:QUIZ_SEED.length, pct, level});
+      await saveME();
+      const u = currentUser();
+      u.bestQuizPct = Math.max(u.bestQuizPct||0, pct);
+      await saveDB();
+      await addXP(quizState.score*10);
+      await checkNewAchievements();
+      toast(`+${quizState.score*10} XP`);
+    }
+    quizState.finished=true; quizState.level=level; quizState.pct=pct;
+    render();
+  }
+}
+
+/* ---------- forms ---------- */
+async function handleLogin(e){
+  e.preventDefault();
+  const f=e.target;
+  const login=f.login.value.trim(), pass=f.password.value;
+  if(!login||!pass){ toast(t("fill_all")); return; }
+  const u = DB.users.find(x=>(x.username===login || x.email===login) && x.password===pass);
+  if(!u){ toast(t("wrong_creds")); return; }
+  if(u.blocked){ toast(t("blocked")); return; }
+  ME.session=u.username; await saveME();
+  toast(t("welcome_back")+", "+u.username); go("home");
+}
+async function handleRegister(e){
+  e.preventDefault();
+  const f=e.target;
+  const username=f.username.value.trim(), email=f.email.value.trim(), p1=f.password.value, p2=f.password2.value;
+  if(!username||!email||!p1||!p2){ toast(t("fill_all")); return; }
+  if(p1!==p2){ toast(t("pass_mismatch")); return; }
+  if(DB.users.some(u=>u.username===username||u.email===email)){ toast(t("user_exists")); return; }
+  DB.users.push({username,email,password:p1,role:"user",avatarLetter:username[0].toUpperCase(),created:new Date().toISOString().slice(0,10),blocked:false,xp:0,bestQuizPct:0});
+  await logActivity("registered", username);
+  ME.session=username; await saveME();
+  toast(t("registered_ok")); go("home");
+}
+async function logout(){ ME.session=null; await saveME(); toast(t("loggedout")); go("home"); }
+
+async function createTopic(e){
+  e.preventDefault();
+  if(!currentUser()){ toast(t("need_login")); return; }
+  const f=e.target;
+  const title=f.title.value.trim(), cat=f.cat.value, msg=f.msg.value.trim();
+  if(!title||!msg){ toast(t("fill_all")); return; }
+  const id="t"+Date.now();
+  DB.forumTopics.unshift({id,cat,titleKZ:title,titleRU:title,author:ME.session,views:0,created:new Date().toISOString()});
+  DB.forumPosts.push({id:"p"+Date.now(),topicId:id,author:ME.session,content:msg,contentAlt:msg,created:new Date().toISOString(),likes:0});
+  await logActivity("added_topic", ME.session);
+  await addXP(15);
+  await checkNewAchievements();
+  toast(t("topic_created")); closeModal(); go("topic",id);
+}
+async function addPost(topicId, text){
+  if(!currentUser()){ toast(t("need_login")); return; }
+  if(!text.trim()) return;
+  DB.forumPosts.push({id:"p"+Date.now(), topicId, author:ME.session, content:text, contentAlt:text, created:new Date().toISOString(), likes:0});
+  await saveDB();
+  await addXP(8);
+  await checkNewAchievements();
+  toast(t("post_sent")); render();
+}
+async function deletePost(id){ DB.forumPosts = DB.forumPosts.filter(p=>p.id!==id); await saveDB(); render(); }
+async function editPost(id,newText){ const p=DB.forumPosts.find(x=>x.id===id); if(p){p.content=newText;p.contentAlt=newText;} await saveDB(); render(); }
+async function likePost(id){
+  const p = DB.forumPosts.find(x=>x.id===id); if(!p) return;
+  p.likes = (p.likes||0)+1; await saveDB(); render();
+}
+
+/* ---------- render pieces ---------- */
+function navLink(route,label){ return `<a href="#" onclick="go('${route}');return false;" class="${ROUTE===route?'active':''}">${label}</a>`; }
+
+function topbar(){
+  const u = currentUser();
+  return `
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:22px;">
+      <a href="#" onclick="go('home');return false;" class="brand"><span class="brand-mark"></span>КосмоГид</a>
+      <button class="hamburger" onclick="toggleMobileNav()"><span></span></button>
+      <nav class="mainnav ${mobileNavOpen?'open':''}">
+        ${navLink('home',t('nav_home'))}
+        ${navLink('planetariums',t('nav_planet'))}
+        ${navLink('cosmos',t('nav_cosmos'))}
+        ${navLink('missions',t('nav_missions'))}
+        ${navLink('news',t('nav_news'))}
+        ${navLink('articles',t('nav_articles'))}
+        ${navLink('quiz',t('nav_quiz'))}
+        ${navLink('horoscope',t('nav_horoscope'))}
+        ${navLink('numerology',t('nav_numerology'))}
+        ${navLink('forum',t('nav_forum'))}
+      </nav>
+    </div>
+    <div class="topbar-right">
+      <button class="icon-btn" title="${t('global_search')}" onclick="openSearch()" aria-label="${t('global_search')}">🔍</button>
+      <div class="lang-switch">
+        <button class="${LANG==='kz'?'active':''}" onclick="setLang('kz')">KZ</button>
+        <button class="${LANG==='ru'?'active':''}" onclick="setLang('ru')">RU</button>
+      </div>
+      <button class="icon-btn" title="${t('fav')}" onclick="go('favorites')" aria-label="${t('fav')}">⭐</button>
+      ${u? `
+        <div style="position:relative;">
+          <button class="icon-btn" title="${t('notifications')}" onclick="toggleNotifPanel(event)" aria-label="${t('notifications')}">🔔${unreadNotifCount()>0?`<span class="badge-dot">${unreadNotifCount()}</span>`:''}</button>
+          ${notifPanelOpen? notifPanel() : ''}
+        </div>
+        ${u.role==='admin'?`<button class="icon-btn" title="${t('admin_panel')}" onclick="go('admin')">🛡️</button>`:''}
+        <button class="pill-btn ghost" onclick="go('profile')">👤 ${esc(u.username)}</button>
+        <button class="icon-btn" title="${t('logout')}" onclick="logout()" aria-label="${t('logout')}">↩︎</button>
+      ` : `
+        <button class="pill-btn ghost" onclick="go('auth-login')">${t('login')}</button>
+        <button class="pill-btn" onclick="go('auth-register')">${t('register')}</button>
+      `}
+    </div>
+  </div>`;
+}
+window.setLang = async function(l){ LANG=l; ME.lang=l; await saveME(); render(); };
+
+/* ---------- global search ---------- */
+let searchOpen = false, searchQuery = "", searchActiveIdx = 0;
+window.openSearch = function(){ searchOpen=true; searchQuery=""; searchActiveIdx=0; render(); setTimeout(()=>document.getElementById('global-search-input')?.focus(),30); };
+window.closeSearch = function(){ searchOpen=false; render(); };
+function buildSearchIndex(){
+  const idx = [];
+  PLANETS.forEach(p=> idx.push({em:p.em, title:tf(p.nameKZ,p.nameRU), type:LANG==='kz'?'Планета':'Планета', go:['planet-detail',p.id]}));
+  DB.planetariums.forEach(p=> idx.push({em:p.em, title:tf(p.nameKZ,p.nameRU), type:t('nav_planet'), go:['planetarium-detail',p.id]}));
+  CONSTELLATIONS_SEED.forEach(c=> idx.push({em:c.em, title:tf(c.nameKZ,c.nameRU), type:t('constellations'), go:['constellation-detail',c.id]}));
+  DB.news.forEach(n=> idx.push({em:n.em, title:tf(n.titleKZ,n.titleRU), type:t('nav_news'), go:['news-detail',n.id]}));
+  DB.articles.forEach(a=> idx.push({em:a.em, title:tf(a.titleKZ,a.titleRU), type:t('nav_articles'), go:['article-detail',a.id]}));
+  DB.forumTopics.forEach(tp=> idx.push({em:'💬', title:tf(tp.titleKZ,tp.titleRU), type:t('nav_forum'), go:['topic',tp.id]}));
+  return idx;
+}
+function searchModal(){
+  const idx = buildSearchIndex();
+  const q = searchQuery.trim().toLowerCase();
+  const results = q? idx.filter(r=>r.title.toLowerCase().includes(q)).slice(0,10) : [];
+  return `
+  <div class="modal search-modal" onclick="event.stopPropagation()">
+    <div class="search-input-row">
+      <span>🔍</span>
+      <input id="global-search-input" placeholder="${t('search_placeholder')}" value="${esc(searchQuery)}"
+        oninput="searchQuery=this.value;searchActiveIdx=0;renderSearchResults()"
+        onkeydown="handleSearchKey(event)">
+      <button class="icon-btn" onclick="closeSearch()">✕</button>
+    </div>
+    <div class="search-results" id="search-results-wrap">${searchResultsHTML(results)}</div>
+    <div style="padding:10px 20px 16px;color:var(--ink-dimmer);font-size:0.72rem;">${t('search_hint')}</div>
+  </div>`;
+}
+function searchResultsHTML(results){
+  if(!searchQuery.trim()) return `<div class="search-empty">${t('search_hint')}</div>`;
+  if(!results.length) return `<div class="search-empty">${t('no_results')}</div>`;
+  return results.map((r,i)=>`
+    <div class="search-result-item ${i===searchActiveIdx?'kbd-active':''}" onclick="go('${r.go[0]}','${r.go[1]}');closeSearch();">
+      <div class="sr-em">${r.em}</div>
+      <div><div>${esc(r.title)}</div><div class="sr-meta">${esc(r.type)}</div></div>
+    </div>`).join('');
+}
+window.renderSearchResults = function(){
+  const idx = buildSearchIndex();
+  const q = searchQuery.trim().toLowerCase();
+  const results = q? idx.filter(r=>r.title.toLowerCase().includes(q)).slice(0,10) : [];
+  const wrap = document.getElementById('search-results-wrap');
+  if(wrap) wrap.innerHTML = searchResultsHTML(results);
+};
+window.handleSearchKey = function(e){
+  const idx = buildSearchIndex();
+  const q = searchQuery.trim().toLowerCase();
+  const results = q? idx.filter(r=>r.title.toLowerCase().includes(q)).slice(0,10) : [];
+  if(e.key==='ArrowDown'){ e.preventDefault(); searchActiveIdx=Math.min(searchActiveIdx+1,results.length-1); renderSearchResults(); }
+  else if(e.key==='ArrowUp'){ e.preventDefault(); searchActiveIdx=Math.max(searchActiveIdx-1,0); renderSearchResults(); }
+  else if(e.key==='Enter'){ const r=results[searchActiveIdx]; if(r){ go(r.go[0],r.go[1]); closeSearch(); } }
+  else if(e.key==='Escape'){ closeSearch(); }
+};
+
+/* ---------- notifications ---------- */
+let notifPanelOpen = false;
+window.toggleNotifPanel = function(e){ e.stopPropagation(); notifPanelOpen=!notifPanelOpen; render(); };
+async function markAllRead(){ ME.notifications.forEach(n=>n.read=true); await saveME(); render(); }
+window.markAllRead = markAllRead;
+function notifPanel(){
+  const list = ME.notifications||[];
+  return `
+  <div class="notif-panel" onclick="event.stopPropagation()">
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border-bottom:1px solid var(--glass-brd);">
+      <b style="font-size:0.88rem;">${t('notifications')}</b>
+      ${list.length? `<button style="font-size:0.72rem;color:var(--cyan);" onclick="markAllRead()">${t('mark_all_read')}</button>`:''}
+    </div>
+    ${list.length? list.slice(0,12).map(n=>`
+      <div class="notif-item ${n.read?'':'unread'}">
+        <span class="n-em">${n.em}</span>
+        <div><div>${esc(tf(n.textKZ,n.textRU))}</div><div class="n-time">${fmtDate(n.date)}</div></div>
+      </div>`).join('') : `<div class="notif-empty">🔕<br>${t('no_notifications')}</div>`}
+  </div>`;
+}
+
+function crumbs(items){
+  return `<div class="crumbs">${items.map((it,i)=> i<items.length-1? `<a href="#" onclick="go('${it.r}');return false;">${it.l}</a><span>/</span>` : `<span style="color:var(--ink)">${it.l}</span>`).join('')}</div>`;
+}
+
+function footer(){
+  return `
+  <footer>
+    <div class="footer-grid">
+      <div>
+        <div class="brand" style="margin-bottom:10px;"><span class="brand-mark"></span>КосмоГид</div>
+        <p style="color:var(--ink-dimmer);font-size:0.85rem;max-width:260px;">${t('hero_tag')}</p>
+      </div>
+      <div><ul>
+        <li style="color:var(--ink);font-weight:700;margin-bottom:10px;">${t('footer_about')}</li>
+        <li><a href="#" onclick="go('planetariums');return false;">${t('nav_planet')}</a></li>
+        <li><a href="#" onclick="go('cosmos');return false;">${t('nav_cosmos')}</a></li>
+        <li><a href="#" onclick="go('news');return false;">${t('nav_news')}</a></li>
+      </ul></div>
+      <div><ul>
+        <li style="color:var(--ink);font-weight:700;margin-bottom:10px;">${t('footer_contacts')}</li>
+        <li><a href="#" onclick="go('forum');return false;">${t('nav_forum')}</a></li>
+        <li>info@kosmoguide.kz</li>
+        <li>+7 700 000 00 00</li>
+      </ul></div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 КосмоГид</span>
+      <span>KZ | RU</span>
+    </div>
+  </footer>`;
+}
+
+/* ---------- pages ---------- */
+function pageHome(){
+  const news = DB.news.filter(n=>n.status==="published").slice(0,3);
+  const heroObjects = [
+    {p:PLANETS.find(x=>x.id==="mars"), glow:"rgba(255,122,92,0.55)"},
+    {p:PLANETS.find(x=>x.id==="saturn"), glow:"rgba(240,217,160,0.5)"},
+    {p:PLANETS.find(x=>x.id==="earth"), glow:"rgba(79,214,255,0.55)"},
+    {p:PLANETS.find(x=>x.id==="jupiter"), glow:"rgba(217,166,108,0.5)"}
+  ];
+  return `
+  <div class="hero" id="hero-el">
+    <div class="hero-layer" id="hero-layer-1"><div class="orbits"><div class="orbit1"></div><div class="orbit2"></div><div class="orbit3"></div></div></div>
+    <div class="hero-badge"><span class="dot"></span>${t('hero_badge')}</div>
+    <div class="hero-eyebrow">${t('hero_eyebrow')}</div>
+    <h1>${t('hero_title')}</h1>
+    <p class="tagline">${t('hero_tag')}</p>
+    <p class="subtag">${t('hero_desc')}</p>
+    <div class="hero-actions">
+      <button class="pill-btn" onclick="go('cosmos')">${t('cta_cosmos')}</button>
+      <button class="pill-btn ghost" onclick="go('planetariums')">${t('cta_planet')}</button>
+    </div>
+    <div class="hero-objects">
+      ${heroObjects.map(o=>`
+        <div class="hero-obj" style="--obj-glow:${o.glow};background:radial-gradient(circle at 32% 30%,${o.p.color}55,transparent 70%);" onclick="go('planet-detail','${o.p.id}')">
+          ${o.p.em}
+          <div class="hero-obj-card">
+            <b>${esc(tf(o.p.nameKZ,o.p.nameRU)).toUpperCase()}</b>
+            <div class="hoc-row"><span>${t('distance')}</span><span>${o.p.distance}</span></div>
+            <div class="hoc-row"><span>${t('temp')}</span><span>${o.p.temp}</span></div>
+            <div class="hoc-row"><span>${t('moons')}</span><span>${o.p.moons}</span></div>
+          </div>
+        </div>`).join('')}
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-head"><h2>${t('sections_title')}</h2></div>
+    <div class="bento">
+      <a class="tile" href="#" onclick="go('planetariums');return false;"><span class="em">🌍</span><b>${t('nav_planet')}</b><span>${DB.planetariums.length}+ ${LANG==='kz'?'орын':'мест'}</span></a>
+      <a class="tile" href="#" onclick="go('cosmos');return false;"><span class="em">🪐</span><b>${t('nav_cosmos')}</b><span>${PLANETS.length} ${LANG==='kz'?'объект':'объектов'}</span></a>
+      <a class="tile" href="#" onclick="go('constellations');return false;"><span class="em">⭐</span><b>${t('constellations')}</b><span>${CONSTELLATIONS_SEED.length} ${LANG==='kz'?'шоқжұлдыз':'созвездий'}</span></a>
+      <a class="tile" href="#" onclick="go('missions');return false;"><span class="em">🚀</span><b>${t('nav_missions')}</b><span>${MISSIONS_SEED.length} ${LANG==='kz'?'кезең':'этапов'}</span></a>
+      <a class="tile" href="#" onclick="go('news');return false;"><span class="em">📰</span><b>${t('nav_news')}</b><span>${LANG==='kz'?'жаңа':'свежие'}</span></a>
+      <a class="tile" href="#" onclick="go('horoscope');return false;"><span class="em">🔮</span><b>${t('nav_horoscope')}</b><span>12 ${LANG==='kz'?'белгі':'знаков'}</span></a>
+      <a class="tile" href="#" onclick="go('quiz');return false;"><span class="em">🧠</span><b>${t('nav_quiz')}</b><span>${QUIZ_SEED.length} ${t('q_of')}</span></a>
+      <a class="tile" href="#" onclick="go('forum');return false;"><span class="em">💬</span><b>${t('nav_forum')}</b><span>${DB.forumTopics.length} ${t('topics')}</span></a>
+    </div>
+  </div>
+
+  <div class="section">
+    ${todayDashboard()}
+  </div>
+
+  <div class="section">
+    <div class="section-head">
+      <div><h2>${t('today_news')}</h2></div>
+      <a class="see-all" href="#" onclick="go('news');return false;">${t('see_all')} →</a>
+    </div>
+    <div class="grid-3">
+      ${news.map(n=>newsCard(n)).join('')}
+    </div>
+  </div>`;
+}
+function todayDashboard(){
+  const now = new Date();
+  const moon = moonPhase(now);
+  const dateStr = now.toLocaleDateString(LANG==='kz'?'kk-KZ':'ru-RU',{weekday:'long',day:'numeric',month:'long'});
+  const factPool = LANG==='kz'? DAILY_FACTS_KZ : DAILY_FACTS_RU;
+  const fact = factPool[now.getDate() % factPool.length];
+  const visible = ["Марс","Юпитер","Сатурн"];
+  return `
+  <div class="today-block">
+    <div class="today-head">
+      <div><h2 style="margin-bottom:4px;">${t('today_dashboard')}</h2><p style="color:var(--ink-dimmer);font-size:0.82rem;text-transform:capitalize;">${dateStr}</p></div>
+      <a class="see-all" href="#" onclick="go('news');return false;">${t('see_all')} →</a>
+    </div>
+    <div class="today-grid">
+      <div class="today-cell"><div class="tc-label">${t('moon_phase')}</div><div class="tc-value">${moon.em} ${moon.name}</div><div class="tc-sub">${moon.illum}% ${LANG==='kz'?'жарықтандырылған':'освещено'}</div></div>
+      <div class="today-cell"><div class="tc-label">${t('visible_planets')}</div><div class="tc-value">${visible.join(', ')}</div><div class="tc-sub">${LANG==='kz'?'кешкі аспанда':'на вечернем небе'}</div></div>
+      <div class="today-cell"><div class="tc-label">${t('newplanets')}</div><div class="tc-value">${EXO_PLANETS[0].nameKZ}</div><div class="tc-sub">${EXO_PLANETS[0].date}</div></div>
+      <div class="today-cell"><div class="tc-label">${t('fact_of_day')}</div><div class="tc-value" style="font-size:0.85rem;font-weight:500;line-height:1.4;">${fact}</div></div>
+    </div>
+  </div>`;
+}
+function initHeroParallax(){
+  const hero = document.getElementById('hero-el'); if(!hero) return;
+  const layer = document.getElementById('hero-layer-1'); if(!layer) return;
+  hero.onmousemove = (e)=>{
+    const r = hero.getBoundingClientRect();
+    const x = (e.clientX - r.left)/r.width - 0.5;
+    const y = (e.clientY - r.top)/r.height - 0.5;
+    layer.style.transform = `translate(${x*18}px, ${y*14}px)`;
+  };
+  hero.onmouseleave = ()=>{ layer.style.transform = 'translate(0,0)'; };
+}
+
+function newsCard(n){
+  return `<div class="card">
+    <div class="card-media" style="background:linear-gradient(135deg,rgba(139,107,255,0.18),rgba(79,214,255,0.08));">${n.em}</div>
+    <div class="card-body">
+      <span class="tag">${fmtDate(n.date)}</span>
+      <h3>${esc(tf(n.titleKZ,n.titleRU))}</h3>
+      <p>${esc(tf(n.descKZ,n.descRU))}</p>
+    </div>
+    <div class="card-cta"><span></span><a href="#" onclick="go('news-detail','${n.id}');return false;">${t('more')} →</a></div>
+  </div>`;
+}
+
+function pagePlanetariums(){
+  return `
+  ${crumbs([{r:'home',l:t('home')},{l:t('planetariums')}])}
+  <div class="section" style="margin-top:6px;">
+    <div class="section-head"><div><h2>${t('planetariums')}</h2><p>${t('planetariums_sub')}</p></div></div>
+    <div class="filter-bar">
+      <input type="text" id="pf-search" placeholder="${t('search_ph')}" oninput="renderPlanetList()">
+      <select class="field" id="pf-sort" style="width:auto;padding:9px 14px;" onchange="renderPlanetList()">
+        <option value="rating">${t('sort_by')}: ${t('sort_rating')}</option>
+        <option value="name">${t('sort_by')}: ${t('sort_name')}</option>
+        <option value="city">${t('sort_by')}: ${t('sort_city')}</option>
+      </select>
+      <button class="chip" data-f="3d" onclick="togglePFilter('3d')">3D</button>
+      <button class="chip" data-f="kids" onclick="togglePFilter('kids')">${t('kids')}</button>
+      <button class="chip" data-f="adult" onclick="togglePFilter('adult')">${t('adults')}</button>
+      <button class="chip" data-f="excursion" onclick="togglePFilter('excursion')">${LANG==='kz'?'Экскурсия':'Экскурсии'}</button>
+      <button class="chip" data-f="observation" onclick="togglePFilter('observation')">${LANG==='kz'?'Бақылау':'Наблюдение'}</button>
+      <button class="chip" data-f="lectures" onclick="togglePFilter('lectures')">${LANG==='kz'?'Дәрістер':'Лекции'}</button>
+    </div>
+    <div class="grid-3" id="planet-list"></div>
+  </div>`;
+}
+let pFilters = new Set();
+function togglePFilter(f){ pFilters.has(f)?pFilters.delete(f):pFilters.add(f); document.querySelectorAll(`.chip[data-f="${f}"]`).forEach(b=>b.classList.toggle('active')); renderPlanetList(); }
+function isOpenNow(hours){
+  try{
+    const [from,to] = hours.replace(/[^\d:–-]/g,'').split(/[–-]/);
+    const now = new Date(); const cur = now.getHours()+now.getMinutes()/60;
+    const [fh,fm] = from.split(':').map(Number), [th,tm] = to.split(':').map(Number);
+    const f = fh+(fm||0)/60, tt = th+(tm||0)/60;
+    return cur>=f && cur<=tt;
+  }catch(e){ return true; }
+}
+function renderPlanetList(){
+  const q = (document.getElementById('pf-search')?.value||"").toLowerCase();
+  const sortBy = document.getElementById('pf-sort')?.value || "rating";
+  let list = DB.planetariums.filter(p=>{
+    const name=tf(p.nameKZ,p.nameRU).toLowerCase();
+    const matchesQ = !q || name.includes(q) || p.city.toLowerCase().includes(q);
+    const tagMap = {"3d":"3d","kids":"family","adult":"adult","excursion":"excursion","observation":"observation","lectures":"lectures"};
+    const matchesF = pFilters.size===0 || [...pFilters].every(f=> p.tags.includes(tagMap[f]||f));
+    return matchesQ && matchesF;
+  });
+  list = [...list].sort((a,b)=>{
+    if(sortBy==="name") return tf(a.nameKZ,a.nameRU).localeCompare(tf(b.nameKZ,b.nameRU));
+    if(sortBy==="city") return a.city.localeCompare(b.city);
+    return b.rating-a.rating;
+  });
+  const el = document.getElementById('planet-list');
+  if(!el) return;
+  el.innerHTML = list.length? list.map(p=>{
+    const open = isOpenNow(p.hours);
+    return `
+    <div class="card">
+      <div class="card-media" style="background:linear-gradient(135deg,var(--gold-soft),var(--violet-soft));"><span>${p.em}</span></div>
+      <div class="card-body">
+        <div class="meta-row"><span class="tag">📍 ${esc(p.city)}</span><span class="tag violet">⭐ ${p.rating}</span><span class="tag ${open?'ok':''}" style="${open?'':'background:rgba(255,107,129,0.12);color:var(--danger);'}">${open? t('open_now') : t('closed_now')}</span></div>
+        <h3>${esc(tf(p.nameKZ,p.nameRU))}</h3>
+        <p>${esc(tf(p.descKZ,p.descRU))}</p>
+      </div>
+      <div class="card-cta"><button class="btn small" onclick="toggleFav('planetarium','${p.id}','${esc(tf(p.nameKZ,p.nameRU))}')">${isFav('planetarium',p.id)?'★':'☆'}</button>
+      <a href="#" onclick="go('planetarium-detail','${p.id}');return false;">${t('more')} →</a></div>
+    </div>`;
+  }).join('') : `<div class="empty-state" style="grid-column:1/-1;"><div class="em">🔭</div><p>${t('no_results')}</p></div>`;
+}
+
+function pagePlanetariumDetail(id){
+  const p = DB.planetariums.find(x=>x.id===id);
+  if(!p) return `<div class="empty-state"><div class="em">🛰️</div><p>${t('no_results')}</p></div>`;
+  return `
+  ${crumbs([{r:'home',l:t('home')},{r:'planetariums',l:t('planetariums')},{l:tf(p.nameKZ,p.nameRU)}])}
+  <div class="detail-hero">
+    <div class="detail-icon" style="background:linear-gradient(135deg,rgba(255,205,122,0.16),rgba(139,107,255,0.1));">${p.em}</div>
+    <div style="flex:1;min-width:240px;">
+      <h1 style="font-size:1.9rem;margin-bottom:8px;">${esc(tf(p.nameKZ,p.nameRU))}</h1>
+      <div class="meta-row" style="margin-bottom:14px;">
+        <span class="tag">📍 ${esc(p.city)}, ${esc(p.country)}</span>
+        <span class="tag violet">⭐ ${p.rating}</span>
+        <span class="tag">🕐 ${p.hours}</span>
+        <span class="tag ${isOpenNow(p.hours)?'ok':''}" style="${isOpenNow(p.hours)?'':'background:rgba(255,107,129,0.12);color:var(--danger);'}">${isOpenNow(p.hours)? t('open_now') : t('closed_now')}</span>
+      </div>
+      <p class="prose">${esc(tf(p.descKZ,p.descRU))}</p>
+      <div style="margin-top:18px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn primary" onclick="toggleFav('planetarium','${p.id}','${esc(tf(p.nameKZ,p.nameRU))}')">${isFav('planetarium',p.id)? '★ '+t('in_fav') : '☆ '+t('add_fav')}</button>
+        <button class="btn" onclick="go('map')">🗺️ ${t('route')}</button>
+        <button class="btn">${p.contact}</button>
+      </div>
+    </div>
+  </div>
+  <div class="section" style="margin-top:10px;">
+    <h3 style="margin-bottom:14px;">💛 ${t('reviews_title')}</h3>
+    ${getComments('planetarium',p.id).length? '' : `<p style="color:var(--ink-dimmer);font-size:0.85rem;margin-bottom:10px;">${t('no_reviews')}</p>`}
+  </div>
+  ${commentsBlock('planetarium', p.id)}`;
+}
+
+function pageMap(){
+  const pts = DB.planetariums.map((p,i)=>({...p, x: 10+ (i*17)%78, y: 16+ (i*13)%66 }));
+  return `
+  ${crumbs([{r:'home',l:t('home')},{l:t('nav_planet')}])}
+  <div class="section" style="margin-top:6px;">
+    <div class="section-head"><div><h2>🗺️ ${LANG==='kz'?'Ғарышты өзіңе жақыннан тап':'Найди космос рядом с собой'}</h2><p>${t('planetariums_sub')}</p></div></div>
+    <div style="display:grid;grid-template-columns:340px 1fr;gap:18px;" class="map-layout">
+      <div style="max-height:520px;overflow:auto;display:flex;flex-direction:column;gap:10px;">
+        ${pts.map(p=>`
+          <div class="topic-row" style="cursor:pointer;" onclick="focusMapPoint('${p.id}')" id="map-row-${p.id}">
+            <div class="ti"><div class="avatar" style="background:linear-gradient(135deg,var(--gold),var(--violet));">${p.em}</div>
+              <div><b style="font-size:0.88rem;">${esc(tf(p.nameKZ,p.nameRU))}</b>
+              <div style="color:var(--ink-dimmer);font-size:0.75rem;margin-top:2px;">📍 ${p.city} · ⭐ ${p.rating}</div></div>
+            </div>
+          </div>`).join('')}
+      </div>
+      <div>
+        <div style="position:relative;height:440px;border-radius:var(--radius-l);overflow:hidden;background:radial-gradient(circle at 30% 20%,var(--violet-soft),transparent 60%),var(--nebula);border:1px solid var(--glass-brd);">
+          ${pts.map(p=>`<button onclick="focusMapPoint('${p.id}')" id="map-pt-${p.id}" title="${esc(tf(p.nameKZ,p.nameRU))}" style="position:absolute;left:${p.x}%;top:${p.y}%;width:16px;height:16px;border-radius:50%;background:var(--cyan);box-shadow:0 0 0 6px var(--cyan-soft);transition:.2s;"></button>`).join('')}
+        </div>
+        <div id="map-point-detail" style="margin-top:18px;"></div>
+      </div>
+    </div>
+  </div>
+  <style>@media(max-width:900px){.map-layout{grid-template-columns:1fr !important;}}</style>`;
+}
+window.focusMapPoint = function(id){
+  document.querySelectorAll('[id^="map-pt-"]').forEach(el=>el.style.background='var(--cyan)');
+  const pin = document.getElementById('map-pt-'+id); if(pin) pin.style.background='var(--gold)';
+  const p = DB.planetariums.find(x=>x.id===id);
+  document.getElementById('map-point-detail').innerHTML = `
+    <div class="card" style="max-width:100%;flex-direction:row;">
+      <div class="card-media" style="width:110px;flex-shrink:0;background:linear-gradient(135deg,var(--gold-soft),var(--violet-soft));">${p.em}</div>
+      <div class="card-body">
+        <h3>${esc(tf(p.nameKZ,p.nameRU))}</h3>
+        <p>${esc(tf(p.descKZ,p.descRU))}</p>
+        <div class="meta-row"><span class="tag">📍 ${p.city}</span><span class="tag violet">⭐ ${p.rating}</span><span class="tag">🕐 ${p.hours}</span><span class="tag ${isOpenNow(p.hours)?'ok':''}">${isOpenNow(p.hours)?t('open_now'):t('closed_now')}</span></div>
+        <a href="#" onclick="go('planetarium-detail','${p.id}');return false;" style="color:var(--cyan);font-size:0.85rem;font-weight:600;">${t('more')} →</a>
+      </div>
+    </div>`;
+};
+window.openMapPoint = window.focusMapPoint;
+
+function pageCosmos(){
+  return `
+  ${crumbs([{r:'home',l:t('home')},{l:t('cosmos')}])}
+  <div class="section" style="margin-top:6px;">
+    <div class="section-head"><div><h2>${t('cosmos')}</h2><p>${t('cosmos_sub')}</p></div></div>
+    <h3 style="margin-bottom:16px;color:var(--ink-dim);">${t('solar')}</h3>
+    <div class="grid-4">
+      ${PLANETS.map(p=>`
+      <a class="card" href="#" onclick="go('planet-detail','${p.id}');return false;">
+        <div class="card-media" style="background:radial-gradient(circle,${p.color}33,transparent 70%);font-size:2.2rem;">${p.em}</div>
+        <div class="card-body"><h3>${esc(tf(p.nameKZ,p.nameRU))}</h3><span class="meta-row">${p.distance}</span></div>
+      </a>`).join('')}
+    </div>
+  </div>`;
+}
+
+function pagePlanetDetail(id){
+  const p = PLANETS.find(x=>x.id===id);
+  if(!p) return `<div class="empty-state"><div class="em">🪐</div><p>${t('no_results')}</p></div>`;
+  return `
+  ${crumbs([{r:'home',l:t('home')},{r:'cosmos',l:t('cosmos')},{l:tf(p.nameKZ,p.nameRU)}])}
+  <div class="detail-hero">
+    <div class="detail-icon" style="background:radial-gradient(circle,${p.color}44,transparent 70%);">${p.em}</div>
+    <div style="flex:1;min-width:260px;">
+      <h1 style="font-size:2rem;margin-bottom:10px;">${esc(tf(p.nameKZ,p.nameRU))}</h1>
+      <p class="prose">${esc(tf(p.descKZ,p.descRU))}</p>
+      <button class="btn primary" style="margin-top:14px;" onclick="toggleFav('planet','${p.id}','${esc(tf(p.nameKZ,p.nameRU))}')">${isFav('planet',p.id)? '★ '+t('in_fav') : '☆ '+t('add_fav')}</button>
+    </div>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-box"><b>${p.distance}</b><span>${t('distance')}</span></div>
+    <div class="stat-box"><b>${p.diameter}</b><span>${t('diameter')}</span></div>
+    <div class="stat-box"><b>${p.temp}</b><span>${t('temp')}</span></div>
+    <div class="stat-box"><b>${p.moons}</b><span>${t('moons')}</span></div>
+    <div class="stat-box"><b>${p.day}</b><span>${t('daylen')}</span></div>
+    <div class="stat-box"><b>${p.year}</b><span>${t('yearlen')}</span></div>
+  </div>
+  <div style="margin-top:20px;padding:18px 20px;background:var(--glass);border:1px solid var(--glass-brd);border-radius:var(--radius-m);">
+    <b style="color:var(--gold);font-size:0.85rem;">✨ ${t('facts')}</b>
+    <p class="prose" style="margin-top:8px;">${esc(tf(p.factKZ,p.factRU))}</p>
+  </div>
+  ${commentsBlock('planet', p.id)}`;
+}
+
+function pageConstellations(){
+  return `
+  ${crumbs([{r:'home',l:t('home')},{l:t('constellations')}])}
+  <div class="section" style="margin-top:6px;">
+    <div class="section-head"><div><h2>${t('constellations')}</h2><p>${t('constellations_sub')}</p></div></div>
+    <div class="grid-3">
+      ${CONSTELLATIONS_SEED.map(c=>`
+      <a class="card" href="#" onclick="go('constellation-detail','${c.id}');return false;">
+        <div class="card-media" style="background:radial-gradient(circle,rgba(79,214,255,0.16),transparent 70%);">${c.em}</div>
+        <div class="card-body"><h3>${esc(tf(c.nameKZ,c.nameRU))}</h3><p>${esc(tf(c.descKZ,c.descRU))}</p></div>
+      </a>`).join('')}
+    </div>
+  </div>`;
+}
+function pageConstellationDetail(id){
+  const c = CONSTELLATIONS_SEED.find(x=>x.id===id);
+  if(!c) return `<div class="empty-state"><div class="em">⭐</div></div>`;
+  return `
+  ${crumbs([{r:'home',l:t('home')},{r:'constellations',l:t('constellations')},{l:tf(c.nameKZ,c.nameRU)}])}
+  <div class="detail-hero">
+    <div class="detail-icon" style="background:radial-gradient(circle,rgba(79,214,255,0.18),transparent 70%);">${c.em}</div>
+    <div style="flex:1;min-width:260px;">
+      <h1 style="font-size:2rem;margin-bottom:10px;">${esc(tf(c.nameKZ,c.nameRU))}</h1>
+      <p class="prose">${esc(tf(c.descKZ,c.descRU))}</p>
+      <button class="btn primary" style="margin-top:14px;" onclick="toggleFav('constellation','${c.id}','${esc(tf(c.nameKZ,c.nameRU))}')">${isFav('constellation',c.id)? '★ '+t('in_fav') : '☆ '+t('add_fav')}</button>
+    </div>
+  </div>
+  <div class="stat-grid">
+    <div class="stat-box" style="grid-column:span 2;"><b style="font-size:0.95rem;">${c.stars}</b><span>${t('main_stars')}</span></div>
+    <div class="stat-box"><b>${c.best}</b><span>${t('best_time')}</span></div>
+    <div class="stat-box"><b>${c.dir}</b><span>${t('direction')}</span></div>
+  </div>
+  <div style="margin-top:20px;padding:18px 20px;background:var(--glass);border:1px solid var(--glass-brd);border-radius:var(--radius-m);">
+    <b style="color:var(--gold);font-size:0.85rem;">📖 ${t('mythology')}</b>
+    <p class="prose" style="margin-top:8px;">${esc(tf(c.mythKZ,c.mythRU))}</p>
+  </div>
+  ${commentsBlock('constellation', c.id)}`;
+}
+
+function pageMissions(){
+  return `
+  ${crumbs([{r:'home',l:t('home')},{l:t('missions')}])}
+  <div class="section" style="margin-top:6px;">
+    <div class="section-head"><div><h2>${t('missions')}</h2><p>${t('missions_sub')}</p></div></div>
+    <div class="timeline">
+      ${MISSIONS_SEED.map(m=>`
+      <div class="tl-item">
+        <div class="tl-year">${m.year} · ${m.em}</div>
+        <h3 style="margin:6px 0 6px;">${esc(tf(m.titleKZ,m.titleRU))}</h3>
+        <div class="meta-row" style="margin-bottom:8px;"><span class="tag violet">${t('agency')}: ${m.agency}</span></div>
+        <p class="prose">${esc(tf(m.descKZ,m.descRU))}</p>
+      </div>`).join('')}
+    </div>
+  </div>`;
+}
+
+function pageNews(){
+  const cats = ["all","exo","nasa","esa","telescope","galaxy","solar"];
+  const catLabel = {all:LANG==='kz'?'Барлығы':'Все',exo:LANG==='kz'?'Экзопланеталар':'Экзопланеты',nasa:'NASA',esa:'ESA',telescope:LANG==='kz'?'Телескоптар':'Телескопы',galaxy:LANG==='kz'?'Галактикалар':'Галактики',solar:LANG==='kz'?'Күн жүйесі':'Солн. система'};
+  return `
+  ${crumbs([{r:'home',l:t('home')},{l:t('news')}])}
+  <div class="section" style="margin-top:6px;">
+    <div class="section-head"><div><h2>${t('news')}</h2><p>${t('news_sub')}</p></div></div>
+    <div class="filter-bar">
+      ${cats.map(c=>`<button class="chip" data-nc="${c}" onclick="setNewsCat('${c}')">${catLabel[c]}</button>`).join('')}
+    </div>
+    <div style="margin-bottom:34px;padding:20px 22px;border-radius:var(--radius-m);background:rgba(255,205,122,0.06);border:1px solid rgba(255,205,122,0.25);">
+      <b style="color:var(--gold);">🪐 ${t('newplanets')}</b>
+      ${EXO_PLANETS.map(e=>`
+        <div style="margin-top:12px;">
+          <h3 style="font-size:1rem;">${esc(tf(e.nameKZ,e.nameRU))}</h3>
+          <div class="meta-row" style="margin:6px 0;"><span class="tag">${t('discovered')}: ${e.date}</span><span class="tag">${t('discoverer')}: ${e.who}</span><span class="tag violet">${t('telescope')}: ${e.telescope}</span><span class="tag">${e.dist}</span></div>
+          <p class="prose">${esc(tf(e.descKZ,e.descRU))}</p>
+        </div>`).join('')}
+    </div>
+    <div class="grid-3" id="news-list"></div>
+  </div>`;
+}
+let newsCatFilter="all";
+window.setNewsCat = function(c){ newsCatFilter=c; document.querySelectorAll('.chip[data-nc]').forEach(b=>b.classList.toggle('active', b.dataset.nc===c)); renderNewsList(); };
+function renderNewsList(){
+  const el = document.getElementById('news-list'); if(!el) return;
+  const list = DB.news.filter(n=> n.status==='published' && (newsCatFilter==='all'||n.cat===newsCatFilter));
+  el.innerHTML = list.length? list.map(n=>newsCard(n)).join('') : `<div class="empty-state" style="grid-column:1/-1;"><div class="em">📰</div><p>${t('no_results')}</p></div>`;
+}
+function pageNewsDetail(id){
+  const n = DB.news.find(x=>x.id===id);
+  if(!n) return `<div class="empty-state"><div class="em">📰</div></div>`;
+  return `
+  ${crumbs([{r:'home',l:t('home')},{r:'news',l:t('news')},{l:tf(n.titleKZ,n.titleRU)}])}
+  <div class="detail-hero">
+    <div class="detail-icon">${n.em}</div>
+    <div style="flex:1;min-width:260px;">
+      <span class="tag">${fmtDate(n.date)}</span>
+      <h1 style="font-size:1.8rem;margin:10px 0;">${esc(tf(n.titleKZ,n.titleRU))}</h1>
+      <p class="prose">${esc(tf(n.descKZ,n.descRU))}</p>
+      <button class="btn primary" style="margin-top:14px;" onclick="toggleFav('news','${n.id}','${esc(tf(n.titleKZ,n.titleRU))}')">${isFav('news',n.id)? '★ '+t('in_fav') : '☆ '+t('add_fav')}</button>
+    </div>
+  </div>
+  ${commentsBlock('news', n.id)}`;
+}
+
+function pageArticles(){
+  return `
+  ${crumbs([{r:'home',l:t('home')},{l:t('articles')}])}
+  <div class="section" style="margin-top:6px;">
+    <div class="section-head"><div><h2>${t('articles')}</h2><p>${t('articles_sub')}</p></div></div>
+    <div class="grid-3">
+      ${DB.articles.filter(a=>a.status==='published').map(a=>`
+      <a class="card" href="#" onclick="go('article-detail','${a.id}');return false;">
+        <div class="card-media" style="background:linear-gradient(135deg,rgba(139,107,255,0.16),rgba(79,214,255,0.06));">${a.em}</div>
+        <div class="card-body">
+          <span class="tag violet">${esc(tf(a.catKZ,a.catRU))}</span>
+          <h3>${esc(tf(a.titleKZ,a.titleRU))}</h3>
+          <p>${esc(tf(a.descKZ,a.descRU))}</p>
+          <div class="meta-row"><span>${t('author')}: ${a.author}</span><span>👁 ${a.views}</span></div>
+        </div>
+      </a>`).join('')}
+    </div>
+  </div>`;
+}
+function pageArticleDetail(id){
+  const a = DB.articles.find(x=>x.id===id);
+  if(!a) return `<div class="empty-state"><div class="em">📚</div></div>`;
+  return `
+  ${crumbs([{r:'home',l:t('home')},{r:'articles',l:t('articles')},{l:tf(a.titleKZ,a.titleRU)}])}
+  <div class="detail-hero">
+    <div class="detail-icon">${a.em}</div>
+    <div style="flex:1;min-width:260px;">
+      <span class="tag violet">${esc(tf(a.catKZ,a.catRU))}</span>
+      <h1 style="font-size:1.8rem;margin:10px 0;">${esc(tf(a.titleKZ,a.titleRU))}</h1>
+      <div class="meta-row" style="margin-bottom:10px;"><span class="tag">${t('author')}: ${a.author}</span><span class="tag">${fmtDate(a.date)}</span><span class="tag">👁 ${a.views} ${t('views')}</span></div>
+      <p class="prose">${esc(tf(a.descKZ,a.descRU))}</p>
+      <p class="prose">${LANG==='kz'?'Толық мақала мәтіні дипломдық жобаның толық нұсқасында қолжетімді болады.':'Полный текст статьи будет доступен в развёрнутой версии дипломного проекта.'}</p>
+      <button class="btn primary" style="margin-top:14px;" onclick="toggleFav('article','${a.id}','${esc(tf(a.titleKZ,a.titleRU))}')">${isFav('article',a.id)? '★ '+t('in_fav') : '☆ '+t('add_fav')}</button>
+    </div>
+  </div>
+  ${commentsBlock('article', a.id)}`;
+}
+
+function commentsBlock(type,id){
+  const list = getComments(type,id);
+  const u = currentUser();
+  return `
+  <div class="section" style="margin-top:44px;">
+    <h3 style="margin-bottom:16px;">💬 ${t('comments')} (${list.length})</h3>
+    ${u? `
+    <div class="form-row" style="display:flex;gap:10px;">
+      <input class="field" id="cm-${type}-${id}" placeholder="${t('add_comment')}">
+      <button class="btn primary" onclick="submitComment('${type}','${id}')">${t('send')}</button>
+    </div>` : `<p style="color:var(--ink-dimmer);font-size:0.85rem;margin-bottom:14px;">${t('need_login')}</p>`}
+    ${list.length? list.map((c,i)=>`
+      <div class="comment">
+        <div class="avatar">${esc(c.author[0].toUpperCase())}</div>
+        <div class="comment-body">
+          <div class="post-head"><b style="font-size:0.88rem;">${esc(c.author)}</b><span style="color:var(--ink-dimmer);font-size:0.75rem;">${fmtDate(c.date)}</span></div>
+          <p style="font-size:0.88rem;color:var(--ink-dim);">${esc(c.text)}</p>
+          <div class="reactions">
+            <button onclick="likeComment('${type}','${id}',${i})">👍 ${c.likes||0}</button>
+            ${(u && (u.username===c.author || u.role==='admin'))? `<button onclick="deleteComment('${type}','${id}',${i})">🗑 ${t('delete')}</button>`:''}
+          </div>
+        </div>
+      </div>`).join('') : `<p style="color:var(--ink-dimmer);font-size:0.85rem;">—</p>`}
+  </div>`;
+}
+window.submitComment = function(type,id){
+  const el = document.getElementById(`cm-${type}-${id}`);
+  if(el && el.value.trim()){ addComment(type,id,el.value.trim()); }
+};
+
+function pageHoroscope(){
+  return `
+  ${crumbs([{r:'home',l:t('home')},{l:t('horoscope')}])}
+  <div class="section" style="margin-top:6px;">
+    <div class="section-head"><div><h2>${t('horoscope')}</h2><p>${t('horoscope_sub')}</p></div></div>
+    <div class="zodiac-grid">
+      ${ZODIAC.map(z=>`<button class="zbtn ${selectedZodiac===z.id?'active':''}" onclick="selectZodiac('${z.id}')"><span class="em">${z.em}</span>${tf(z.kz,z.ru)}</button>`).join('')}
+    </div>
+    <div id="horo-result"></div>
+    <p style="margin-top:26px;color:var(--ink-dimmer);font-size:0.78rem;">✦ ${t('horo_disclaimer')}</p>
+  </div>`;
+}
+let selectedZodiac = null;
+window.selectZodiac = function(id){ selectedZodiac=id; renderHoroResult(); };
+function renderHoroResult(){
+  const el = document.getElementById('horo-result'); if(!el) return;
+  document.querySelectorAll('.zbtn').forEach(b=>b.classList.remove('active'));
+  if(!selectedZodiac){ el.innerHTML=""; return; }
+  const z = ZODIAC.find(x=>x.id===selectedZodiac);
+  const seed = seededNum(selectedZodiac + new Date().toDateString());
+  const pool = LANG==='kz'?HORO_POOL_KZ:HORO_POOL_RU;
+  el.innerHTML = `
+    <h3 style="margin:26px 0 14px;">${z.em} ${t('today_horo')} — ${tf(z.kz,z.ru)}</h3>
+    <div class="horo-grid">
+      <div class="horo-card"><b>${t('h_general')}</b><p style="margin-top:8px;font-size:0.88rem;color:var(--ink-dim);">${pickHoro(pool,seed,'general')}</p></div>
+      <div class="horo-card"><b>${t('h_love')}</b><p style="margin-top:8px;font-size:0.88rem;color:var(--ink-dim);">${pickHoro(pool,seed+1,'love')}</p></div>
+      <div class="horo-card"><b>${t('h_work')}</b><p style="margin-top:8px;font-size:0.88rem;color:var(--ink-dim);">${pickHoro(pool,seed+2,'work')}</p></div>
+      <div class="horo-card"><b>${t('h_money')}</b><p style="margin-top:8px;font-size:0.88rem;color:var(--ink-dim);">${pickHoro(pool,seed+3,'money')}</p></div>
+      <div class="horo-card"><b>${t('h_mood')}</b><p style="margin-top:8px;font-size:0.88rem;color:var(--ink-dim);">${pickHoro(pool,seed+4,'mood')}</p></div>
+      <div class="horo-card"><b>${t('h_energy')}</b><p style="margin-top:8px;font-size:0.88rem;color:var(--ink-dim);">${pickHoro(pool,seed+5,'energy')}</p></div>
+    </div>
+    <div class="horo-card" style="margin-top:14px;"><b>💡 ${t('h_tip')}</b><p style="margin-top:8px;font-size:0.88rem;color:var(--ink-dim);">${pickHoro(pool,seed+6,'tip')}</p></div>`;
+}
+
+function pageNumerology(){
+  return `
+  ${crumbs([{r:'home',l:t('home')},{l:t('numerology')}])}
+  <div class="section" style="margin-top:6px;">
+    <div class="section-head"><div><h2>${t('numerology')}</h2><p>${t('numerology_sub')}</p></div></div>
+    <div class="quiz-box" style="text-align:left;">
+      <label class="field-label">${t('birthdate')}</label>
+      <input type="date" class="field" id="num-date">
+      <button class="btn primary full" style="margin-top:16px;" onclick="calcNumerology()">${t('calc')}</button>
+      <div id="num-result"></div>
+    </div>
+  </div>`;
+}
+const LIFEPATH_MEANINGS = {
+ 1:{kz:"Көшбасшылық, тәуелсіздік және батылдық сипаттайды.",ru:"Характеризует лидерство, независимость и смелость."},
+ 2:{kz:"Үйлесімділік, диломатия және серіктестікке бейімділік.",ru:"Гармония, дипломатичность и склонность к партнёрству."},
+ 3:{kz:"Шығармашылық, коммуникация және оптимизм.",ru:"Творчество, общительность и оптимизм."},
+ 4:{kz:"Тәртіп, тұрақтылық және еңбекқорлық.",ru:"Дисциплина, стабильность и трудолюбие."},
+ 5:{kz:"Еркіндік, өзгеріс және шытырман оқиғаларға құштарлық.",ru:"Свобода, перемены и тяга к приключениям."},
+ 6:{kz:"Жауапкершілік, қамқорлық және отбасылық құндылықтар.",ru:"Ответственность, забота и семейные ценности."},
+ 7:{kz:"Талдаушылық ойлау, руханият және білімге құштарлық.",ru:"Аналитический склад ума, духовность и тяга к знаниям."},
+ 8:{kz:"Табысқа ұмтылу, тәжірибе және материалдық тұрақтылық.",ru:"Стремление к успеху, практичность и материальная стабильность."},
+ 9:{kz:"Гуманизм, кеңдік және идеализм.",ru:"Гуманизм, широта души и идеализм."},
+ 11:{kz:"Жоғары интуиция мен рухани көшбасшылық (шебер сан).",ru:"Высокая интуиция и духовное лидерство (мастер-число)."},
+ 22:{kz:"Ауқымды идеяларды іске асыратын құрылысшы (шебер сан).",ru:"Строитель масштабных идей (мастер-число)."}
+};
+window.calcNumerology = async function(){
+  const v = document.getElementById('num-date').value;
+  if(!v){ toast(t('fill_all')); return; }
+  const digits = v.replace(/-/g,'').split('').map(Number);
+  let sum = digits.reduce((a,b)=>a+b,0);
+  while(sum>9 && sum!==11 && sum!==22){ sum = String(sum).split('').reduce((a,b)=>a+Number(b),0); }
+  const meaning = LIFEPATH_MEANINGS[sum] || LIFEPATH_MEANINGS[1];
+  if(currentUser()){ ME.numerology = {date:v, number:sum}; await saveME(); }
+  const seed = seededNum(v);
+  const days = [
+    {lbl:t('today_lbl'), off:0},
+    {lbl:t('in3days'), off:3},
+    {lbl:t('nextweek'), off:7}
+  ];
+  document.getElementById('num-result').innerHTML = `
+    <div style="margin-top:22px;text-align:center;">
+      <div style="font-size:3rem;font-weight:700;color:var(--cyan);">${sum}</div>
+      <b>${t('lifepath')}</b>
+      <p class="prose" style="margin:14px auto 0;max-width:480px;">${tf(meaning.kz,meaning.ru)}</p>
+    </div>
+    <h3 style="margin:28px 0 14px;">⭐ ${t('lucky_days')}</h3>
+    <div class="stat-grid">
+      ${days.map(d=>{
+        const dt = new Date(Date.now()+d.off*86400000);
+        return `<div class="stat-box"><b>${dt.toLocaleDateString(LANG==='kz'?'kk-KZ':'ru-RU',{day:'numeric',month:'short'})}</b><span>${d.lbl}</span></div>`;
+      }).join('')}
+    </div>`;
+};
+
+function quizLeaderboard(){
+  const rows = [...DB.users].filter(u=>u.bestQuizPct>0).sort((a,b)=>b.bestQuizPct-a.bestQuizPct).slice(0,5);
+  if(!rows.length) return '';
+  return `
+  <div class="stat-card" style="text-align:left;max-width:520px;margin:34px auto 0;">
+    <b style="font-size:0.95rem;display:block;margin-bottom:12px;">🏆 ${t('leaderboard')}</b>
+    ${rows.map((u,i)=>`<div class="bar-row"><span class="lbl" style="width:24px;">#${i+1}</span><span class="lbl" style="width:110px;">${esc(u.username)}</span><div class="bar-track"><div class="bar-fill" style="width:${u.bestQuizPct}%"></div></div><span>${u.bestQuizPct}%</span></div>`).join('')}
+  </div>`;
+}
+function pageQuiz(){
+  if(!quizState){
+    return `
+    ${crumbs([{r:'home',l:t('home')},{l:t('quiz')}])}
+    <div class="section" style="margin-top:6px;text-align:center;">
+      <h2>${t('quiz')}</h2><p style="color:var(--ink-dimmer);margin:10px 0 26px;">${t('quiz_sub')}</p>
+      <button class="pill-btn" onclick="startQuiz()">🧠 ${t('start_quiz')}</button>
+      ${quizLeaderboard()}
+    </div>`;
+  }
+  if(quizState.finished){
+    return `
+    <div class="quiz-box" style="text-align:center;margin-top:40px;">
+      <div style="font-size:3rem;">🏆</div>
+      <h2 style="margin:14px 0 6px;">${t('quiz_result')}: ${quizState.score}/${QUIZ_SEED.length} (${quizState.pct}%)</h2>
+      <p style="color:var(--cyan);font-size:1.1rem;margin-bottom:8px;">${t('quiz_level')}: ${quizState.level}</p>
+      ${currentUser()? `<p class="level-chip" style="margin-bottom:20px;">✦ ${t('xp_points')}: ${ME.xp||0} · ${t('level')} ${xpLevel(ME.xp)}</p>` : ''}
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn primary" onclick="quizState=null;render();">${t('restart')}</button>
+        ${currentUser()? `<button class="btn" onclick="go('profile')">🏆 ${t('achievements')}</button>` : ''}
+      </div>
+    </div>
+    ${quizLeaderboard()}`;
+  }
+  const q = QUIZ_SEED[quizState.idx];
+  const opts = tf(q.optKZ,q.optRU);
+  const correctText = opts[q.correct];
+  return `
+  <div class="quiz-box">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+      <span class="mono" style="font-size:0.74rem;color:var(--cyan);letter-spacing:.06em;">${t('question_of')} ${String(quizState.idx+1).padStart(2,'0')} / ${String(QUIZ_SEED.length).padStart(2,'0')}</span>
+      ${currentUser()? `<span class="level-chip">✦ ${(ME.xp||0)+quizState.score*10} XP</span>`:''}
+    </div>
+    <div class="progress-bar"><div class="progress-fill" style="width:${(quizState.idx)/QUIZ_SEED.length*100}%"></div></div>
+    <h3 style="font-size:1.15rem;margin:18px 0 22px;">${tf(q.qKZ,q.qRU)}</h3>
+    ${opts.map((o,i)=>{
+      let cls="quiz-opt";
+      if(quizState.answered){
+        if(i===q.correct) cls+=" correct";
+        else if(i===quizState.selected) cls+=" wrong";
+      }
+      return `<button class="${cls}" onclick="answerQuiz(${i});render();" ${quizState.answered?'disabled':''}>${esc(o)}</button>`;
+    }).join('')}
+    ${quizState.answered? `
+      <div style="margin:14px 0 6px;font-weight:700;color:${quizState.selected===q.correct?'var(--ok)':'var(--danger)'};">${quizState.selected===q.correct?'✅ '+t('correct')+' +10 XP':'❌ '+t('wrong')}</div>
+      <p style="font-size:0.82rem;color:var(--ink-dimmer);margin-bottom:16px;">💡 ${t('explanation')}: ${LANG==='kz'?'дұрыс жауап —':'правильный ответ —'} <b style="color:var(--ink);">${esc(correctText)}</b></p>
+      <button class="btn primary full" onclick="nextQuiz()">${quizState.idx<QUIZ_SEED.length-1? (LANG==='kz'?'Келесі →':'Далее →') : t('quiz_result')}</button>
+    ` : ''}
+  </div>`;
+}
+
+/* ---------- forum ---------- */
+function onlineCount(){
+  // stable pseudo-live figure derived from active (non-blocked) users + time of day
+  const base = DB.users.filter(u=>!u.blocked).length;
+  const hour = new Date().getHours();
+  return Math.max(1, base + (hour%5));
+}
+let forumSort = "newest";
+function sortTopics(list){
+  const sorted = [...list];
+  if(forumSort==="popular") sorted.sort((a,b)=> b.views - a.views);
+  else if(forumSort==="discussed") sorted.sort((a,b)=> DB.forumPosts.filter(p=>p.topicId===b.id).length - DB.forumPosts.filter(p=>p.topicId===a.id).length);
+  else sorted.sort((a,b)=> new Date(b.created) - new Date(a.created));
+  return sorted;
+}
+function sortTabs(){
+  return `<div class="filter-bar" style="margin-bottom:14px;">
+    <button class="chip ${forumSort==='newest'?'active':''}" onclick="forumSort='newest';render();">${t('newest')}</button>
+    <button class="chip ${forumSort==='popular'?'active':''}" onclick="forumSort='popular';render();">${t('popular')}</button>
+    <button class="chip ${forumSort==='discussed'?'active':''}" onclick="forumSort='discussed';render();">${t('discussed')}</button>
+  </div>`;
+}
+function pageForum(){
+  return `
+  ${crumbs([{r:'home',l:t('home')},{l:t('forum')}])}
+  <div class="section" style="margin-top:6px;">
+    <div class="section-head">
+      <div><h2>${t('forum')}</h2><p>${t('forum_sub')}</p></div>
+      <button class="btn primary" onclick="openNewTopicModal()">+ ${t('new_topic')}</button>
+    </div>
+    <div class="meta-row" style="margin-bottom:20px;"><span class="tag ok">🟢 ${onlineCount()} ${t('online_now')}</span><span class="tag">💬 ${DB.forumTopics.length} ${t('topics')}</span><span class="tag">🗨️ ${DB.forumPosts.length} ${t('posts')}</span></div>
+    <div class="forum-cats">
+      ${FORUM_CATS.map(c=>{
+        const count = DB.forumTopics.filter(t=>t.cat===c.id).length;
+        return `<a class="fc" href="#" onclick="go('forum-cat','${c.id}');return false;"><div style="font-size:1.5rem;margin-bottom:8px;">${c.em}</div><b>${tf(c.kz,c.ru)}</b><div style="color:var(--ink-dimmer);font-size:0.78rem;margin-top:4px;">${count} ${t('topics')}</div></a>`;
+      }).join('')}
+    </div>
+    <h3 style="margin:30px 0 14px;">${LANG==='kz'?'Тақырыптар':'Темы'}</h3>
+    ${sortTabs()}
+    ${forumTopicRows(sortTopics(DB.forumTopics).slice(0,8))}
+  </div>`;
+}
+function forumTopicRows(list){
+  if(!list.length) return `<div class="empty-state"><div class="em">💬</div><p>${t('no_results')}</p></div>`;
+  return list.map(tp=>{
+    const postsCount = DB.forumPosts.filter(p=>p.topicId===tp.id).length;
+    const cat = FORUM_CATS.find(c=>c.id===tp.cat);
+    return `<a class="topic-row" href="#" onclick="go('topic','${tp.id}');return false;">
+      <div class="ti"><div class="avatar">${esc(tp.author[0].toUpperCase())}</div>
+        <div><b style="font-size:0.92rem;">${esc(tf(tp.titleKZ,tp.titleRU))}</b>
+        <div style="color:var(--ink-dimmer);font-size:0.76rem;margin-top:2px;">${cat?tf(cat.kz,cat.ru)+' · ':''}${t('author_lbl')}: ${esc(tp.author)} · ${fmtDate(tp.created)}</div></div>
+      </div>
+      <div class="meta-row"><span class="tag">💬 ${postsCount}</span><span class="tag">👁 ${tp.views}</span></div>
+    </a>`;
+  }).join('');
+}
+function pageForumCat(catId){
+  const c = FORUM_CATS.find(x=>x.id===catId);
+  const list = sortTopics(DB.forumTopics.filter(t=>t.cat===catId));
+  return `
+  ${crumbs([{r:'home',l:t('home')},{r:'forum',l:t('forum')},{l:tf(c.kz,c.ru)}])}
+  <div class="section" style="margin-top:6px;">
+    <div class="section-head"><div><h2>${c.em} ${tf(c.kz,c.ru)}</h2></div>
+      <button class="btn primary" onclick="openNewTopicModal('${catId}')">+ ${t('new_topic')}</button>
+    </div>
+    ${sortTabs()}
+    ${forumTopicRows(list)}
+  </div>`;
+}
+window.openNewTopicModal = function(cat){
+  if(!currentUser()){ toast(t('need_login')); go('auth-login'); return; }
+  openModal(`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3 style="margin-bottom:20px;">${t('new_topic')}</h3>
+    <form onsubmit="createTopic(event)">
+      <div class="form-row"><label class="field-label">${t('topic_title')}</label><input class="field" name="title" required></div>
+      <div class="form-row"><label class="field-label">${t('category')}</label>
+        <select class="field" name="cat">${FORUM_CATS.map(c=>`<option value="${c.id}" ${cat===c.id?'selected':''}>${tf(c.kz,c.ru)}</option>`).join('')}</select>
+      </div>
+      <div class="form-row"><label class="field-label">${t('write_msg')}</label><textarea class="field" name="msg" rows="4" required></textarea></div>
+      <button class="btn primary full" type="submit">${t('create')}</button>
+    </form>`);
+};
+function pageTopic(id){
+  const tp = DB.forumTopics.find(x=>x.id===id);
+  if(!tp) return `<div class="empty-state"><div class="em">💬</div></div>`;
+  const posts = DB.forumPosts.filter(p=>p.topicId===id);
+  const u = currentUser();
+  const c = FORUM_CATS.find(x=>x.id===tp.cat);
+  return `
+  ${crumbs([{r:'home',l:t('home')},{r:'forum',l:t('forum')},{r:'forum-cat:'+tp.cat,l:tf(c.kz,c.ru)},{l:tf(tp.titleKZ,tp.titleRU)}])}
+  <div class="section" style="margin-top:6px;">
+    <h2 style="margin-bottom:8px;">${esc(tf(tp.titleKZ,tp.titleRU))}</h2>
+    <div class="meta-row" style="margin-bottom:26px;"><span class="tag">${t('author_lbl')}: ${esc(tp.author)}</span><span class="tag">${t('created')}: ${fmtDate(tp.created)}</span><span class="tag">👁 ${tp.views}</span></div>
+    ${posts.map(p=>{
+      const author = DB.users.find(x=>x.username===p.author);
+      return `
+      <div class="post">
+        <div class="avatar">${esc(p.author[0].toUpperCase())}</div>
+        <div class="post-body">
+          <div class="post-head"><span><b style="font-size:0.9rem;">${esc(p.author)}</b>${author&&author.role==='admin'?` <span class="admin-tag">ADMIN</span>`:''}</span><span style="color:var(--ink-dimmer);font-size:0.75rem;">${fmtDate(p.created)}</span></div>
+          <p style="font-size:0.88rem;color:var(--ink-dim);" id="post-text-${p.id}">${esc(p.content)}</p>
+          <div class="post-actions">
+            <button onclick="likePost('${p.id}')">👍 ${p.likes||0}</button>
+            ${(u && (u.username===p.author || u.role==='admin'))? `
+              <button onclick="promptEditPost('${p.id}')">✏️ ${t('edit')}</button>
+              <button onclick="deletePost('${p.id}')">🗑 ${t('delete')}</button>
+            ` : (u? `<button onclick="toast('${t('report')} ✓')">🚩 ${t('report')}</button>` : '')}
+          </div>
+        </div>
+      </div>`;}).join('')}
+    ${u? `
+      <div style="display:flex;gap:10px;margin-top:20px;">
+        <input class="field" id="new-post-text" placeholder="${t('write_msg')}">
+        <button class="btn primary" onclick="submitPost('${id}')">${t('send')}</button>
+      </div>` : `<p style="color:var(--ink-dimmer);font-size:0.85rem;margin-top:14px;">${t('need_login')}</p>`}
+  </div>`;
+}
+window.submitPost = function(topicId){
+  const el = document.getElementById('new-post-text');
+  if(el && el.value.trim()){ addPost(topicId, el.value.trim()); el.value=""; }
+};
+window.promptEditPost = function(id){
+  const p = DB.forumPosts.find(x=>x.id===id);
+  const el = document.getElementById('post-text-'+id);
+  el.innerHTML = `<textarea class="field" id="edit-ta-${id}" rows="3">${esc(p.content)}</textarea>
+    <div style="margin-top:8px;display:flex;gap:8px;"><button class="btn small primary" onclick="saveEditPost('${id}')">${t('save')}</button><button class="btn small" onclick="render()">${t('cancel')}</button></div>`;
+};
+window.saveEditPost = function(id){
+  const ta = document.getElementById('edit-ta-'+id);
+  editPost(id, ta.value.trim());
+};
+
+/* ---------- auth pages ---------- */
+function pageAuthLogin(){
+  return `
+  <div style="max-width:420px;margin:60px auto;position:relative;">
+    <div class="orbits" style="opacity:0.25;top:0;"></div>
+    <div class="quiz-box" style="position:relative;">
+      <div style="text-align:center;margin-bottom:6px;font-size:1.8rem;">🛰️</div>
+      <h2 style="margin-bottom:6px;text-align:center;font-size:1.3rem;">${t('welcome_title')}</h2>
+      <p style="color:var(--ink-dimmer);font-size:0.78rem;margin-bottom:20px;text-align:center;">${t('demo_hint')}</p>
+      <form onsubmit="handleLogin(event)">
+        <div class="form-row"><label class="field-label">${t('username')} / ${t('email')}</label><input class="field" name="login" required></div>
+        <div class="form-row"><label class="field-label">${t('password')}</label><input class="field" type="password" name="password" required></div>
+        <div class="form-row" style="display:flex;justify-content:space-between;align-items:center;">
+          <label style="display:flex;align-items:center;gap:7px;font-size:0.8rem;color:var(--ink-dim);"><input type="checkbox" style="accent-color:var(--violet);">${t('remember_me')}</label>
+          <a href="#" style="font-size:0.78rem;color:var(--cyan);" onclick="toast('${LANG==='kz'?'Демо режимде қолжетімсіз':'Недоступно в демо-режиме'}');return false;">${t('forgot_pass')}</a>
+        </div>
+        <button class="btn primary full" type="submit">${t('submit_login')}</button>
+      </form>
+      <p style="margin-top:16px;font-size:0.85rem;color:var(--ink-dimmer);text-align:center;">${t('no_account')} <a href="#" style="color:var(--cyan);" onclick="go('auth-register');return false;">${t('register')}</a></p>
+    </div>
+  </div>`;
+}
+function pageAuthRegister(){
+  return `
+  <div style="max-width:420px;margin:60px auto;">
+    <div class="quiz-box">
+      <div style="text-align:center;margin-bottom:6px;font-size:1.8rem;">🚀</div>
+      <h2 style="margin-bottom:20px;text-align:center;font-size:1.25rem;">${t('create_profile')}</h2>
+      <form onsubmit="handleRegister(event)">
+        <div class="form-row"><label class="field-label">${t('username')}</label><input class="field" name="username" required></div>
+        <div class="form-row"><label class="field-label">${t('email')}</label><input class="field" type="email" name="email" required></div>
+        <div class="form-row">
+          <label class="field-label">${t('password')}</label>
+          <input class="field" type="password" name="password" required oninput="updatePwStrength(this.value)">
+          <div class="pw-strength"><div class="pw-strength-fill" id="pw-strength-fill" style="width:0%;"></div></div>
+          <div class="pw-hint" id="pw-strength-label">&nbsp;</div>
+        </div>
+        <div class="form-row"><label class="field-label">${t('password2')}</label><input class="field" type="password" name="password2" required></div>
+        <button class="btn primary full" type="submit">${t('submit_reg')}</button>
+      </form>
+      <p style="margin-top:16px;font-size:0.85rem;color:var(--ink-dimmer);text-align:center;">${t('have_account')} <a href="#" style="color:var(--cyan);" onclick="go('auth-login');return false;">${t('login')}</a></p>
+    </div>
+  </div>`;
+}
+window.updatePwStrength = function(pw){
+  const s = pwStrength(pw);
+  const fill = document.getElementById('pw-strength-fill'), label = document.getElementById('pw-strength-label');
+  if(fill){ fill.style.width = s.pct+'%'; fill.style.background = s.color; }
+  if(label){ label.textContent = pw? s.label : ''; label.style.color = s.color; }
+};
+
+/* ---------- profile / favorites ---------- */
+function pageProfile(){
+  const u = currentUser();
+  if(!u) { go('auth-login'); return ''; }
+  const myTopics = DB.forumTopics.filter(t=>t.author===u.username).length;
+  const myPosts = DB.forumPosts.filter(p=>p.author===u.username).length;
+  const bestQuiz = ME.quizResults.length? Math.max(...ME.quizResults.map(r=>r.pct)) : null;
+  return `
+  ${crumbs([{r:'home',l:t('home')},{l:t('my_profile')}])}
+  <div class="profile-head">
+    <div class="profile-avatar">${esc(u.username[0].toUpperCase())}</div>
+    <div>
+      <h2>${esc(u.username)}</h2>
+      <p style="color:var(--ink-dimmer);font-size:0.85rem;">${u.email} · ${t('member_since')}: ${fmtDate(u.created)}</p>
+    </div>
+  </div>
+  <div class="stat-strip" style="margin-bottom:34px;">
+    <div><b>${myPosts}</b><span>${t('msgs_count')}</span></div>
+    <div><b>${myTopics}</b><span>${t('topics_count')}</span></div>
+    <div><b>${bestQuiz!==null? bestQuiz+'%':'—'}</b><span>${t('quiz_best')}</span></div>
+    <div><b>${ME.favorites.length}</b><span>${t('fav')}</span></div>
+  </div>
+  <h3 style="margin-bottom:14px;">⚙️ ${t('settings')}</h3>
+  <form onsubmit="updateProfile(event)" style="max-width:420px;">
+    <div class="form-row"><label class="field-label">${t('change_name')}</label><input class="field" name="username" value="${esc(u.username)}"></div>
+    <div class="form-row"><label class="field-label">${t('change_pass')}</label><input class="field" type="password" name="password" placeholder="••••••"></div>
+    <button class="btn primary" type="submit">${t('save')}</button>
+  </form>`;
+}
+window.updateProfile = async function(e){
+  e.preventDefault();
+  const u = currentUser(); if(!u) return;
+  const f = e.target;
+  const newName = f.username.value.trim();
+  if(newName && newName!==u.username){
+    if(DB.users.some(x=>x.username===newName)){ toast(t('user_exists')); return; }
+    DB.forumTopics.forEach(t=>{ if(t.author===u.username) t.author=newName; });
+    DB.forumPosts.forEach(p=>{ if(p.author===u.username) p.author=newName; });
+    u.username=newName; ME.session=newName;
+  }
+  if(f.password.value.trim()) u.password=f.password.value.trim();
+  await saveDB(); await saveME();
+  toast(t('saved_ok')); go('profile');
+};
+
+function pageFavorites(){
+  const u = currentUser();
+  if(!u){ go('auth-login'); return ''; }
+  const groups = {planetarium:[],planet:[],constellation:[],article:[],news:[]};
+  ME.favorites.forEach(f=>{ if(groups[f.type]) groups[f.type].push(f); });
+  const labelFor = {planetarium:t('nav_planet'),planet:t('cosmos'),constellation:t('constellations'),article:t('articles'),news:t('news')};
+  const total = ME.favorites.length;
+  return `
+  ${crumbs([{r:'home',l:t('home')},{l:t('favorites')}])}
+  <div class="section" style="margin-top:6px;">
+    <div class="section-head"><div><h2>${t('favorites')}</h2><p>${t('favorites_sub')}</p></div></div>
+    ${total===0? `<div class="empty-state"><div class="em">⭐</div><p>${t('empty_fav')}</p></div>` :
+    Object.keys(groups).filter(k=>groups[k].length).map(k=>`
+      <h3 style="margin:26px 0 14px;">${labelFor[k]}</h3>
+      <div class="grid-3">
+      ${groups[k].map(f=>`
+        <div class="card">
+          <div class="card-body">
+            <h3>${esc(f.label)}</h3>
+            <button class="btn small" style="margin-top:10px;" onclick="toggleFav('${f.type}','${f.id}','')">✕ ${t('delete')}</button>
+          </div>
+        </div>`).join('')}
+      </div>`).join('')}
+  </div>`;
+}
+
+/* ---------- admin ---------- */
+function adminNav(){
+  const items = [
+    ["dashboard","📊",t('dashboard')],["users","👥",t('users')],["planetariums","🪐",t('planetariums')],
+    ["news","📰",t('news')],["articles","📚",t('articles')],["forum","💬",t('moderation')],
+    ["comments","🗨️",t('comments_mod')]
+  ];
+  return `<div class="admin-side ${mobileNavOpen?'open':''}">
+    ${items.map(([id,em,label])=>`<a href="#" class="${ADMIN_ROUTE===id?'active':''}" onclick="setAdminRoute('${id}');return false;">${em} ${label}</a>`).join('')}
+    <a href="#" onclick="go('home');return false;" style="margin-top:14px;border-top:1px solid rgba(255,255,255,0.08);padding-top:14px;">← ${t('back')}</a>
+  </div>`;
+}
+window.setAdminRoute = function(r){ ADMIN_ROUTE=r; closeMobileNav(); render(); };
+
+function pageAdmin(){
+  if(!isAdmin()){ return `<div class="empty-state"><div class="em">🚫</div><p>Access denied</p></div>`; }
+  let content = "";
+  if(ADMIN_ROUTE==="dashboard") content = adminDashboard();
+  else if(ADMIN_ROUTE==="users") content = adminUsers();
+  else if(ADMIN_ROUTE==="planetariums") content = adminCRUD("planetariums");
+  else if(ADMIN_ROUTE==="news") content = adminCRUD("news");
+  else if(ADMIN_ROUTE==="articles") content = adminCRUD("articles");
+  else if(ADMIN_ROUTE==="forum") content = adminForum();
+  else if(ADMIN_ROUTE==="comments") content = adminComments();
+  return `
+  <div class="admin-wrap">
+    <button class="hamburger" style="display:flex;margin:14px 0 0 16px;" onclick="toggleMobileNav()"><span></span></button>
+    ${adminNav()}
+    <div class="admin-main">
+      <div class="admin-tag">${t('admin_panel')}</div>
+      ${content}
+    </div>
+  </div>`;
+}
+function adminDashboard(){
+  const stats = [
+    [t('total_users'), DB.users.length],
+    [t('active_users'), DB.users.filter(u=>!u.blocked).length],
+    [t('total_topics'), DB.forumTopics.length],
+    [t('total_posts'), DB.forumPosts.length],
+    [t('total_comments'), Object.values(DB.comments).reduce((a,b)=>a+b.length,0)],
+    [t('total_planet'), DB.planetariums.length],
+    [t('total_news'), DB.news.length],
+    [t('total_articles'), DB.articles.length],
+    [t('total_fav'), ME.favorites.length]
+  ];
+  const maxUsers = Math.max(1, ...DB.users.length?[DB.users.length]:[1]);
+  const topicsByCat = FORUM_CATS.map(c=>({label:tf(c.kz,c.ru), count: DB.forumTopics.filter(t=>t.cat===c.id).length}));
+  const maxCat = Math.max(1, ...topicsByCat.map(x=>x.count));
+  const topArticles = [...DB.articles].sort((a,b)=>b.views-a.views).slice(0,5);
+  const maxViews = Math.max(1, ...topArticles.map(a=>a.views));
+  const activityLabel = {
+    added_news:t('activity_added_news'), added_topic:t('activity_added_topic'),
+    added_comment:t('activity_added_comment'), blocked_user:t('activity_blocked_user'), registered:t('activity_registered')
+  };
+  const activityEm = {added_news:'📰',added_topic:'💬',added_comment:'🗨️',blocked_user:'🚫',registered:'👤'};
+  return `
+  <div class="section-head" style="margin-bottom:20px;">
+    <h2>${t('dashboard')}</h2>
+    <div class="filter-bar" style="margin:0;">
+      <button class="chip active">${t('period_today')}</button>
+      <button class="chip">${t('period_week')}</button>
+      <button class="chip">${t('period_month')}</button>
+      <button class="chip">${t('period_year')}</button>
+    </div>
+  </div>
+  <div class="grid-4" style="margin-bottom:34px;">
+    ${stats.map(([l,v])=>`<div class="stat-card"><b>${v}</b><span>${l}</span></div>`).join('')}
+  </div>
+  <div class="grid-2" style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+    <div class="stat-card" style="text-align:left;">
+      <b style="font-size:1rem;display:block;margin-bottom:14px;">${LANG==='kz'?'Санат бойынша тақырыптар':'Темы по категориям'}</b>
+      ${topicsByCat.map(x=>`<div class="bar-row"><span class="lbl">${x.label}</span><div class="bar-track"><div class="bar-fill" style="width:${(x.count/maxCat*100)||0}%"></div></div><span>${x.count}</span></div>`).join('')}
+    </div>
+    <div class="stat-card" style="text-align:left;">
+      <b style="font-size:1rem;display:block;margin-bottom:14px;">${LANG==='kz'?'Танымал мақалалар':'Популярные статьи'}</b>
+      ${topArticles.length? topArticles.map(a=>`<div class="bar-row"><span class="lbl">${esc(tf(a.titleKZ,a.titleRU)).slice(0,16)}…</span><div class="bar-track"><div class="bar-fill" style="width:${(a.views/maxViews*100)}%"></div></div><span>${a.views}</span></div>`).join('') : `<span style="color:var(--ink-dimmer);font-size:0.82rem;">${t('no_data_yet')}</span>`}
+    </div>
+  </div>
+  <div class="stat-card" style="text-align:left;margin-top:20px;padding:0;overflow:hidden;">
+    <b style="font-size:1rem;display:block;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,0.06);">🕐 ${t('recent_activity')}</b>
+    ${DB.activityLog.length? DB.activityLog.slice(0,10).map(a=>`
+      <div style="display:flex;gap:12px;padding:12px 20px;border-bottom:1px solid rgba(255,255,255,0.04);align-items:center;font-size:0.85rem;">
+        <span>${activityEm[a.type]||'•'}</span>
+        <span><b>${esc(a.user)}</b> ${activityLabel[a.type]||a.type}</span>
+        <span style="margin-left:auto;color:var(--ink-dimmer);font-size:0.76rem;">${fmtDate(a.date)}</span>
+      </div>`).join('') : `<div style="padding:20px;color:var(--ink-dimmer);font-size:0.85rem;">${t('no_data_yet')}</div>`}
+  </div>`;
+}
+function adminUsers(){
+  return `
+  <h2 style="margin-bottom:20px;">${t('users')}</h2>
+  <table class="admin-table">
+    <thead><tr><th>${t('username')}</th><th>${t('email')}</th><th>${t('role')}</th><th>${t('status')}</th><th>${t('actions')}</th></tr></thead>
+    <tbody>
+    ${DB.users.map(u=>`
+      <tr>
+        <td>${esc(u.username)}</td><td>${esc(u.email)}</td>
+        <td><span class="admin-tag">${u.role}</span></td>
+        <td><span class="status-dot" style="background:${u.blocked?'var(--danger)':'var(--ok)'}"></span>${u.blocked? t('blocked'): (LANG==='kz'?'Белсенді':'Активен')}</td>
+        <td style="display:flex;gap:8px;">
+          <button class="btn small" onclick="toggleBlockUser('${u.username}')">${u.blocked? t('unblock'):t('block')}</button>
+          <button class="btn small" onclick="toggleAdminRole('${u.username}')">${u.role==='admin'? 'USER':'ADMIN'}</button>
+          ${u.username!=='admin'? `<button class="btn small danger" onclick="deleteUser('${u.username}')">${t('delete')}</button>`:''}
+        </td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+window.toggleBlockUser = async function(username){
+  const u = DB.users.find(x=>x.username===username); if(!u) return;
+  u.blocked = !u.blocked; await saveDB();
+  if(u.blocked) await logActivity("blocked_user", currentUser()?.username||"admin");
+  toast(u.blocked? t('blocked'):t('unblocked')); render();
+};
+window.toggleAdminRole = async function(username){
+  const u = DB.users.find(x=>x.username===username); if(!u) return;
+  u.role = u.role==='admin'?'user':'admin'; await saveDB(); toast(t('saved_ok')); render();
+};
+window.deleteUser = async function(username){
+  if(!confirm(LANG==='kz'?'Осы пайдаланушыны жойғыңыз келе ме?':'Удалить этого пользователя?')) return;
+  DB.users = DB.users.filter(u=>u.username!==username); await saveDB(); toast(t('deleted')); render();
+};
+
+function adminCRUD(kind){
+  const isPlanet = kind==="planetariums";
+  const items = DB[kind];
+  const titleField = isPlanet? "planetariums" : kind;
+  return `
+  <div class="section-head"><h2>${t(kind==="planetariums"?"planetariums":kind)}</h2>
+    <button class="btn primary" onclick="openCRUDModal('${kind}')">+ ${t('add_new')}</button>
+  </div>
+  <table class="admin-table">
+    <thead><tr><th>${LANG==='kz'?'Атауы':'Название'}</th>${isPlanet?`<th>${t('city')}</th>`:`<th>${t('status')}</th>`}<th>${t('actions')}</th></tr></thead>
+    <tbody>
+    ${items.map((it,i)=>`
+      <tr>
+        <td>${esc(tf(it.nameKZ||it.titleKZ, it.nameRU||it.titleRU))}</td>
+        <td>${isPlanet? esc(it.city) : `<span class="status-dot" style="background:${it.status==='published'?'var(--ok)':'var(--gold)'}"></span>${it.status==='published'? t('published'):t('draft')}`}</td>
+        <td style="display:flex;gap:8px;">
+          <button class="btn small" onclick="openCRUDModal('${kind}',${i})">${t('edit')}</button>
+          <button class="btn small danger" onclick="deleteCRUD('${kind}',${i})">${t('delete')}</button>
+        </td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+window.deleteCRUD = async function(kind, i){
+  if(!confirm(LANG==='kz'?'Жоюды растайсыз ба?':'Подтвердите удаление')) return;
+  DB[kind].splice(i,1); await saveDB(); toast(t('deleted')); render();
+};
+window.openCRUDModal = function(kind, i){
+  const isPlanet = kind==="planetariums";
+  const it = (i!==undefined)? DB[kind][i] : (isPlanet? {nameKZ:"",nameRU:"",city:"",country:"Қазақстан",rating:4.5,em:"🌍",tags:[],hours:"",contact:"",descKZ:"",descRU:""}
+    : {titleKZ:"",titleRU:"",descKZ:"",descRU:"",em:"📰",status:"draft", ...(kind==='news'?{cat:'nasa',date:new Date().toISOString().slice(0,10)}:{catKZ:'',catRU:'',author:'',date:new Date().toISOString().slice(0,10),views:0})});
+  openModal(`
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <h3 style="margin-bottom:18px;">${i!==undefined? t('edit'): t('add_new')}</h3>
+    <form onsubmit="saveCRUD(event,'${kind}',${i!==undefined?i:'null'})">
+      ${isPlanet? `
+        <div class="form-row"><label class="field-label">${LANG==='kz'?'Атауы (KZ)':'Название (KZ)'}</label><input class="field" name="nameKZ" value="${esc(it.nameKZ)}" required></div>
+        <div class="form-row"><label class="field-label">${LANG==='kz'?'Атауы (RU)':'Название (RU)'}</label><input class="field" name="nameRU" value="${esc(it.nameRU)}" required></div>
+        <div class="form-row"><label class="field-label">${t('city')}</label><input class="field" name="city" value="${esc(it.city)}" required></div>
+        <div class="form-row"><label class="field-label">${t('rating')}</label><input class="field" type="number" step="0.1" min="0" max="5" name="rating" value="${it.rating}"></div>
+        <div class="form-row"><label class="field-label">${LANG==='kz'?'Сипаттама (KZ)':'Описание (KZ)'}</label><textarea class="field" name="descKZ" rows="2">${esc(it.descKZ)}</textarea></div>
+        <div class="form-row"><label class="field-label">${LANG==='kz'?'Сипаттама (RU)':'Описание (RU)'}</label><textarea class="field" name="descRU" rows="2">${esc(it.descRU)}</textarea></div>
+      ` : `
+        <div class="form-row"><label class="field-label">${LANG==='kz'?'Тақырып (KZ)':'Заголовок (KZ)'}</label><input class="field" name="titleKZ" value="${esc(it.titleKZ)}" required></div>
+        <div class="form-row"><label class="field-label">${LANG==='kz'?'Тақырып (RU)':'Заголовок (RU)'}</label><input class="field" name="titleRU" value="${esc(it.titleRU)}" required></div>
+        <div class="form-row"><label class="field-label">${LANG==='kz'?'Мәтін (KZ)':'Текст (KZ)'}</label><textarea class="field" name="descKZ" rows="2">${esc(it.descKZ)}</textarea></div>
+        <div class="form-row"><label class="field-label">${LANG==='kz'?'Мәтін (RU)':'Текст (RU)'}</label><textarea class="field" name="descRU" rows="2">${esc(it.descRU)}</textarea></div>
+        <div class="form-row"><label class="field-label">${t('status')}</label>
+          <select class="field" name="status"><option value="published" ${it.status==='published'?'selected':''}>${t('published')}</option><option value="draft" ${it.status==='draft'?'selected':''}>${t('draft')}</option></select>
+        </div>
+      `}
+      <button class="btn primary full" type="submit">${t('save')}</button>
+    </form>`);
+};
+window.saveCRUD = async function(e, kind, i){
+  e.preventDefault();
+  const f = e.target, data = {};
+  new FormData(f).forEach((v,k)=>data[k]=v);
+  const isPlanet = kind==="planetariums";
+  let obj;
+  if(isPlanet){
+    obj = {nameKZ:data.nameKZ,nameRU:data.nameRU,city:data.city,country:"Қазақстан",rating:parseFloat(data.rating)||4.5,em:"🌍",tags:["3d"],hours:"10:00–19:00",contact:"—",descKZ:data.descKZ,descRU:data.descRU};
+  } else {
+    obj = {titleKZ:data.titleKZ,titleRU:data.titleRU,descKZ:data.descKZ,descRU:data.descRU,status:data.status,em: kind==='news'?'📰':'📚',
+      ...(kind==='news'? {cat:'nasa',date:new Date().toISOString().slice(0,10),id:'n'+Date.now()} : {catKZ:'Мақала',catRU:'Статья',author:currentUser().username,date:new Date().toISOString().slice(0,10),views:0,id:'a'+Date.now()})};
+  }
+  if(i===null){
+    DB[kind].push(obj);
+    await saveDB();
+    if(kind==='news') await logActivity("added_news", currentUser().username);
+  } else { DB[kind][i] = {...DB[kind][i], ...obj}; await saveDB(); }
+  toast(t('saved_ok')); closeModal(); render();
+};
+
+function adminForum(){
+  return `
+  <h2 style="margin-bottom:20px;">${t('moderation')}</h2>
+  <table class="admin-table">
+    <thead><tr><th>${t('topic_title')}</th><th>${t('author_lbl')}</th><th>${t('posts')}</th><th>${t('actions')}</th></tr></thead>
+    <tbody>
+    ${DB.forumTopics.map(tp=>`
+      <tr>
+        <td>${esc(tf(tp.titleKZ,tp.titleRU))}</td><td>${esc(tp.author)}</td>
+        <td>${DB.forumPosts.filter(p=>p.topicId===tp.id).length}</td>
+        <td><button class="btn small danger" onclick="deleteTopic('${tp.id}')">${t('delete')}</button></td>
+      </tr>`).join('')}
+    </tbody>
+  </table>`;
+}
+window.deleteTopic = async function(id){
+  if(!confirm(LANG==='kz'?'Жоюды растайсыз ба?':'Подтвердите удаление')) return;
+  DB.forumTopics = DB.forumTopics.filter(t=>t.id!==id);
+  DB.forumPosts = DB.forumPosts.filter(p=>p.topicId!==id);
+  await saveDB(); toast(t('deleted')); render();
+};
+function adminComments(){
+  const rows = [];
+  Object.entries(DB.comments).forEach(([key,list])=>{
+    list.forEach((c,idx)=> rows.push({key,idx,...c}));
+  });
+  return `
+  <h2 style="margin-bottom:20px;">${t('comments_mod')}</h2>
+  <table class="admin-table">
+    <thead><tr><th>${t('author_lbl')}</th><th>${LANG==='kz'?'Мәтін':'Текст'}</th><th>${t('actions')}</th></tr></thead>
+    <tbody>
+    ${rows.length? rows.map(r=>`
+      <tr><td>${esc(r.author)}</td><td>${esc(r.text).slice(0,60)}</td>
+      <td><button class="btn small danger" onclick="adminDeleteComment('${r.key}',${r.idx})">${t('delete')}</button></td></tr>`).join('')
+    : `<tr><td colspan="3" style="color:var(--ink-dimmer);">—</td></tr>`}
+    </tbody>
+  </table>`;
+}
+window.adminDeleteComment = async function(key, idx){
+  DB.comments[key].splice(idx,1); await saveDB(); toast(t('deleted')); render();
+};
+
+/* ---------- main render ---------- */
+function pageBody(){
+  switch(ROUTE){
+    case "home": return pageHome();
+    case "planetariums": return pagePlanetariums();
+    case "planetarium-detail": return pagePlanetariumDetail(ROUTE_PARAM);
+    case "map": return pageMap();
+    case "cosmos": return pageCosmos();
+    case "planet-detail": return pagePlanetDetail(ROUTE_PARAM);
+    case "constellations": return pageConstellations();
+    case "constellation-detail": return pageConstellationDetail(ROUTE_PARAM);
+    case "missions": return pageMissions();
+    case "news": return pageNews();
+    case "news-detail": return pageNewsDetail(ROUTE_PARAM);
+    case "articles": return pageArticles();
+    case "article-detail": return pageArticleDetail(ROUTE_PARAM);
+    case "horoscope": return pageHoroscope();
+    case "numerology": return pageNumerology();
+    case "quiz": return pageQuiz();
+    case "forum": return pageForum();
+    case "forum-cat": return pageForumCat(ROUTE_PARAM);
+    case "topic": return pageTopic(ROUTE_PARAM);
+    case "auth-login": return pageAuthLogin();
+    case "auth-register": return pageAuthRegister();
+    case "profile": return pageProfile();
+    case "favorites": return pageFavorites();
+    case "admin": return pageAdmin();
+    default: return pageHome();
+  }
+}
+function render(){
+  const app = document.getElementById("app");
+  const isAdminPage = ROUTE==="admin";
+  app.innerHTML = `
+    ${topbar()}
+    ${isAdminPage? pageBody() : `<main>${pageBody()}</main>${footer()}`}
+    ${modalContent? `<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal wide">${modalContent}</div></div>` : ''}
+    ${searchOpen? `<div class="modal-bg" onclick="closeSearch()">${searchModal()}</div>` : ''}
+  `;
+  // post-render hydration for dynamic lists
+  if(ROUTE==="planetariums") renderPlanetList();
+  if(ROUTE==="news") renderNewsList();
+  if(ROUTE==="horoscope" && selectedZodiac) renderHoroResult();
+  if(ROUTE==="home") initHeroParallax();
+}
+document.addEventListener("click", ()=>{ if(notifPanelOpen){ notifPanelOpen=false; render(); } });
+document.addEventListener("keydown", (e)=>{
+  if(e.key==="/" && !searchOpen && !["INPUT","TEXTAREA"].includes(document.activeElement.tagName)){ e.preventDefault(); openSearch(); }
+});
+
+/* ---------- starfield background ---------- */
+function initStarfield(){
+  const c = document.getElementById("starfield");
+  const ctx = c.getContext("2d");
+  let stars = [];
+  function resize(){ c.width=window.innerWidth; c.height=window.innerHeight;
+    stars = Array.from({length:140},()=>({x:Math.random()*c.width,y:Math.random()*c.height,r:Math.random()*1.4+0.2,s:Math.random()*0.5+0.15,p:Math.random()*Math.PI*2}));
+  }
+  resize(); window.addEventListener("resize", resize);
+  function tick(t){
+    ctx.clearRect(0,0,c.width,c.height);
+    ctx.fillStyle = "#050611"; ctx.fillRect(0,0,c.width,c.height);
+    stars.forEach(s=>{
+      const alpha = 0.35 + 0.65*Math.abs(Math.sin(t*0.0003*s.s + s.p));
+      ctx.beginPath();
+      ctx.fillStyle = `rgba(200,205,255,${alpha})`;
+      ctx.arc(s.x,s.y,s.r,0,Math.PI*2);
+      ctx.fill();
+    });
+    requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ---------- init ---------- */
+(async function init(){
+  initStarfield();
+  await loadState();
+  render();
+})();
+</script>
+</body>
+</html>
